@@ -10,16 +10,31 @@ Overview of verification steps
 
 """
 import json
+import sys
+from json import JSONDecodeError
 
 from cert_core import to_certificate_model
-from cert_verifier import connectors
+
+from cert_verifier import connectors, config
 from cert_verifier.checks import create_verification_steps
-import sys
+from cert_verifier.connectors import ContractConnection
 
 
 def verify_certificate(certificate_model, options={}):
     if str(certificate_model.certificate_json["issuer"]["id"]).endswith(".eth"):
-        pass
+        validitysum = 0
+        messages = []
+        merkleverif = verify_hash(certificate_model.certificate_json["merkleRoot"])
+        validitysum += merkleverif["validitycount"]
+        messages.append(merkleverif["message"])
+
+        targethashverif = verify_hash(certificate_model.certificate_json["targetHash"])
+        validitysum += targethashverif["validitycount"]
+        messages.append(targethashverif["message"])
+        if validitysum == 2:
+            messages.append("Validation not passed")
+        return messages
+
     else:
         # lookup issuer-hosted information
         issuer_info = connectors.get_issuer_info(certificate_model)
@@ -37,8 +52,23 @@ def verify_certificate(certificate_model, options={}):
         verification_steps.add_detailed_status(messages)
         for message in messages:
             print(message['name'] + ',' + str(message['status']))
-
     return messages
+
+
+def verify_hash(hash_val):
+    try:
+        sc = ContractConnection("blockcertsonchaining")
+    except (KeyError, JSONDecodeError):
+        print("Could not load smart contract")
+    '''Checks if the smart contract was issued and if it is on the revocation list'''
+    cert_status = sc.functions.call("hashes", hash_val)
+
+    if cert_status == 0:
+        return {"validitycount": 0, "message": "> hash is not issued on " + config.config["current_chain"]}
+    elif cert_status == 1:
+        return {"validitycount": 1, "message": "> hash is valid on " + config.config["current_chain"]}
+    elif cert_status == 2:
+        return {"validitycount": 0, "message": "> hash is revoked on " + config.config["current_chain"]}
 
 
 def verify_certificate_file(certificate_file_name, transaction_id=None, options={}):
@@ -46,8 +76,8 @@ def verify_certificate_file(certificate_file_name, transaction_id=None, options=
         certificate_bytes = cert_fp.read()
         certificate_json = json.loads(certificate_bytes.decode('utf-8'))
         certificate_model = to_certificate_model(certificate_json=certificate_json,
-                                                       txid=transaction_id,
-                                                       certificate_bytes=certificate_bytes)
+                                                 txid=transaction_id,
+                                                 certificate_bytes=certificate_bytes)
         result = verify_certificate(certificate_model, options)
     return result
 
