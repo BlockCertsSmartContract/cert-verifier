@@ -18,22 +18,25 @@ import sys
 
 
 def verify_certificate(certificate_model, options={}):
-    # lookup issuer-hosted information
-    issuer_info = connectors.get_issuer_info(certificate_model)
+    if str(certificate_model.certificate_json["issuer"]["id"]).endswith(".eth"):
+        pass
+    else:
+        # lookup issuer-hosted information
+        issuer_info = connectors.get_issuer_info(certificate_model)
 
-    # lookup transaction information
-    connector = connectors.createTransactionLookupConnector(certificate_model.chain, options)
-    transaction_info = connector.lookup_tx(certificate_model.txid)
+        # lookup transaction information
+        connector = connectors.createTransactionLookupConnector(certificate_model.chain, options)
+        transaction_info = connector.lookup_tx(certificate_model.txid)
 
-    # create verification plan
-    verification_steps = create_verification_steps(certificate_model, transaction_info, issuer_info,
-                                                   certificate_model.chain)
+        # create verification plan
+        verification_steps = create_verification_steps(certificate_model, transaction_info, issuer_info,
+                                                       certificate_model.chain)
 
-    verification_steps.execute()
-    messages = []
-    verification_steps.add_detailed_status(messages)
-    for message in messages:
-        print(message['name'] + ',' + str(message['status']))
+        verification_steps.execute()
+        messages = []
+        verification_steps.add_detailed_status(messages)
+        for message in messages:
+            print(message['name'] + ',' + str(message['status']))
 
     return messages
 
