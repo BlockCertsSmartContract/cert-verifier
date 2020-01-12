@@ -12,7 +12,7 @@ from cert_schema import normalize_jsonld
 from cert_core import BlockcertVersion, Chain
 from cert_core import chain_to_bitcoin_network
 from cert_core.cert_model.model import SignatureType
-from chainpoint.chainpoint import Chainpoint
+from chainpoint3 import Chainpoint
 
 from cert_verifier import StepStatus
 from cert_verifier.errors import InvalidCertificateError
