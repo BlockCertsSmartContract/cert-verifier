@@ -17,8 +17,9 @@ from cert_core import to_certificate_model
 
 from cert_verifier import connectors, config
 from cert_verifier.checks import create_verification_steps
-from cert_verifier.connectors import ContractConnection
-
+from cert_verifier.connectors import ContractConnection, MakeW3
+from ens import ENS
+import cert_verifier.path_tools as path_tools
 
 def verify_certificate(certificate_model, options={}):
     messages = []
@@ -70,6 +71,18 @@ def verify_hash(hash_val):
     elif cert_status == 2:
         return {"validitycount": 0, "name": "ethcheck", "status": " hash is revoked on " + config.config["current_chain"]}
 
+def ens_checker(ens_name):
+    contract_path = open(path_tools.get_contr_info_path())
+    contract = json.load(contract_path)
+    contract_address = contract["blockcertsonchaining"]["address"]
+    w3_factory = MakeW3()
+    w3 = w3_factory.get_w3_obj()
+    ns = ENS.fromWeb3(w3, "0x112234455C3a32FD11230C42E7Bccd4A84e02010")
+    address = ns.address(ens_name)
+    if address == contract_address:
+        return {"message" : "ENS Address matches contract address"}
+    else:
+        return {"message": "ENS Address does not match contract address"}    
 
 def verify_certificate_file(certificate_file_name, transaction_id=None, options={}):
     with open(certificate_file_name, 'rb') as cert_fp:
