@@ -6,13 +6,13 @@
         "type": "BTCOpReturn"
       }
     ],
-    "merkleRoot": "f029b45bb1a7b1f0b970f6de35344b73cccd16177b4c037acbc2541c7fc27078",
+    "merkleRoot": "123123",
     "proof": [
       {
         "right": "11174e220fe74de907d1107e2a357e41434123f2948fc6b946fbfd7e3e3eecd1"
       }
     ],
-    "targetHash": "637ec732fa4b7b56f4c15a6a12680519a17a9e9eade09f5b424a48eb0e6f5ad0",
+    "targetHash": "123123",
     "type": [
       "MerkleProof2017",
       "Extension"

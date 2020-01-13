@@ -24,11 +24,11 @@ def verify_certificate(certificate_model, options={}):
     messages = []
     if str(certificate_model.certificate_json["badge"]["issuer"]["url"]).endswith(".eth"):
         validitysum = 0
-        merkleverif = verify_hash(certificate_model.certificate_json["signature"]["merkleRoot"])
+        merkleverif = verify_hash(int(certificate_model.certificate_json["signature"]["merkleRoot"]))
         validitysum += merkleverif["validitycount"]
         messages.append(merkleverif["message"])
 
-        targethashverif = verify_hash(certificate_model.certificate_json["signature"]["targetHash"])
+        targethashverif = verify_hash(int(certificate_model.certificate_json["signature"]["targetHash"]))
         validitysum += targethashverif["validitycount"]
         messages.append(targethashverif["message"])
         if validitysum == 2:
