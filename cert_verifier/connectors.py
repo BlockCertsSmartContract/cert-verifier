@@ -12,6 +12,7 @@ import cert_verifier.path_tools as tools
 from cert_verifier import IssuerInfo, IssuerKey, config
 from cert_verifier import TransactionData
 from cert_verifier.errors import *
+from web3 import Web3, HTTPProvider
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -247,15 +248,6 @@ def get_issuer_info(certificate_model):
             revocation_key = IssuerKey(issuer_json['revocationKeys'][0]['key'])
             issuer_info = IssuerInfo([issuer_key], revocation_keys=[revocation_key])
             return issuer_info
-
-
-class HTTPProvider(object):
-    pass
-
-
-class Web3(object):
-    pass
-
 
 class MakeW3(object):
     '''Defines a private key of an ethereum wallet to be used for the transaction, 

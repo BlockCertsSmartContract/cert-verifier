@@ -1,5 +1,5 @@
-usb_path = "<USBPATH>"
-pk_file = "<FILEPATH>"
+usb_path = "/home/flamestro/dev/pas/"
+pk_file = "pk.txt"
 
 privateKey = open(usb_path + pk_file, "r").read().rstrip('\n')
 

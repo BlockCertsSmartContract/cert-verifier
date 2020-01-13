@@ -21,14 +21,14 @@ from cert_verifier.connectors import ContractConnection
 
 
 def verify_certificate(certificate_model, options={}):
-    if str(certificate_model.certificate_json["issuer"]["id"]).endswith(".eth"):
+    if str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth"):
         validitysum = 0
         messages = []
-        merkleverif = verify_hash(certificate_model.certificate_json["merkleRoot"])
+        merkleverif = verify_hash(certificate_model.certificate_json["signature"]["merkleRoot"])
         validitysum += merkleverif["validitycount"]
         messages.append(merkleverif["message"])
 
-        targethashverif = verify_hash(certificate_model.certificate_json["targetHash"])
+        targethashverif = verify_hash(certificate_model.certificate_json["signature"]["targetHash"])
         validitysum += targethashverif["validitycount"]
         messages.append(targethashverif["message"])
         if validitysum == 2:
