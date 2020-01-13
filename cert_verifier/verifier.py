@@ -21,9 +21,9 @@ from cert_verifier.connectors import ContractConnection
 
 
 def verify_certificate(certificate_model, options={}):
-    if str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth"):
+    messages = []
+    if str(certificate_model.certificate_json["badge"]["issuer"]["url"]).endswith(".eth"):
         validitysum = 0
-        messages = []
         merkleverif = verify_hash(certificate_model.certificate_json["signature"]["merkleRoot"])
         validitysum += merkleverif["validitycount"]
         messages.append(merkleverif["message"])
@@ -32,6 +32,8 @@ def verify_certificate(certificate_model, options={}):
         validitysum += targethashverif["validitycount"]
         messages.append(targethashverif["message"])
         if validitysum == 2:
+            messages.append("Validation passed")
+        else:
             messages.append("Validation not passed")
         return messages
 
@@ -48,7 +50,6 @@ def verify_certificate(certificate_model, options={}):
                                                        certificate_model.chain)
 
         verification_steps.execute()
-        messages = []
         verification_steps.add_detailed_status(messages)
         for message in messages:
             print(message['name'] + ',' + str(message['status']))
