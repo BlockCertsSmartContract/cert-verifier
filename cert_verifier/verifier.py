@@ -26,16 +26,15 @@ def verify_certificate(certificate_model, options={}):
         validitysum = 0
         merkleverif = verify_hash(int(certificate_model.certificate_json["signature"]["merkleRoot"]))
         validitysum += merkleverif["validitycount"]
-        messages.append(merkleverif["message"])
+        messages.append(merkleverif)
 
         targethashverif = verify_hash(int(certificate_model.certificate_json["signature"]["targetHash"]))
         validitysum += targethashverif["validitycount"]
-        messages.append(targethashverif["message"])
+        messages.append(targethashverif)
         if validitysum == 2:
-            messages.append("Validation passed")
+            messages.append({"status": "validation passed", "name": "validation status"})
         else:
-            messages.append("Validation not passed")
-        return messages
+            messages.append({"status": "Validation not passed", "name": "validation status"})
 
     else:
         # lookup issuer-hosted information
@@ -51,8 +50,8 @@ def verify_certificate(certificate_model, options={}):
 
         verification_steps.execute()
         verification_steps.add_detailed_status(messages)
-        for message in messages:
-            print(message['name'] + ',' + str(message['status']))
+    for message in messages:
+        print(message['name'] + ',' + str(message['status']))
     return messages
 
 
@@ -65,11 +64,11 @@ def verify_hash(hash_val):
     cert_status = sc.functions.call("hashes", hash_val)
 
     if cert_status == 0:
-        return {"validitycount": 0, "message": "> hash is not issued on " + config.config["current_chain"]}
+        return {"validitycount": 0, "name": "ethcheck", "status": " hash is not issued on " + config.config["current_chain"]}
     elif cert_status == 1:
-        return {"validitycount": 1, "message": "> hash is valid on " + config.config["current_chain"]}
+        return {"validitycount": 1, "name": "ethcheck", "status": " hash is valid on " + config.config["current_chain"]}
     elif cert_status == 2:
-        return {"validitycount": 0, "message": "> hash is revoked on " + config.config["current_chain"]}
+        return {"validitycount": 0, "name": "ethcheck", "status": " hash is revoked on " + config.config["current_chain"]}
 
 
 def verify_certificate_file(certificate_file_name, transaction_id=None, options={}):
