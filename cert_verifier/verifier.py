@@ -23,13 +23,13 @@ import cert_verifier.path_tools as path_tools
 
 def verify_certificate(certificate_model, options={}):
     messages = []
-    if str(certificate_model.certificate_json["badge"]["issuer"]["url"]).endswith(".eth"):
+    if str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth"):
         validitysum = 0
-        merkleverif = verify_hash(int(certificate_model.certificate_json["signature"]["merkleRoot"]))
+        merkleverif = verify_hash(certificate_model.certificate_json["signature"]["merkleRoot"], certificate_model)
         validitysum += merkleverif["validitycount"]
         messages.append(merkleverif)
 
-        targethashverif = verify_hash(int(certificate_model.certificate_json["signature"]["targetHash"]))
+        targethashverif = verify_hash(certificate_model.certificate_json["signature"]["targetHash"], certificate_model)
         validitysum += targethashverif["validitycount"]
         messages.append(targethashverif)
         if validitysum == 2:
@@ -56,9 +56,9 @@ def verify_certificate(certificate_model, options={}):
     return messages
 
 
-def verify_hash(hash_val):
+def verify_hash(hash_val, certificate_model):
     try:
-        sc = ContractConnection("blockcertsonchaining")
+        sc = ContractConnection(certificate_model, "blockcertsonchaining")
     except (KeyError, JSONDecodeError):
         print("Could not load smart contract")
     '''Checks if the smart contract was issued and if it is on the revocation list'''
@@ -71,16 +71,15 @@ def verify_hash(hash_val):
     elif cert_status == 2:
         return {"validitycount": 0, "name": "ethcheck", "status": " hash is revoked on " + config.config["current_chain"]}
 
-def ens_checker(ens_name):
-    contract_path = open(path_tools.get_contr_info_path())
-    contract = json.load(contract_path)
+def ens_checker(certificate_model, ens_name):
+    contract = json.load(certificate_model.certificate_json["badge"]["issuer"]["revocationList"])
     contract_address = contract["blockcertsonchaining"]["address"]
     w3_factory = MakeW3()
     w3 = w3_factory.get_w3_obj()
     ns = ENS.fromWeb3(w3, "0x112234455C3a32FD11230C42E7Bccd4A84e02010")
     address = ns.address(ens_name)
     if address == contract_address:
-        return {"message" : "ENS Address matches contract address"}
+        return {"message": "ENS Address matches contract address"}
     else:
         return {"message": "ENS Address does not match contract address"}    
 
