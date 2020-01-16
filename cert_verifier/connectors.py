@@ -278,7 +278,8 @@ class MakeW3(object):
 class ContractConnection(object):
     '''Collects abi, address, contract data and instantiates a contract object'''
 
-    def __init__(self, contract_name="ropsten"):
+    def __init__(self, certificate_model, contract_name="ropsten"):
+        self.cert_model = certificate_model
         self.contract_name = contract_name
         self.w3 = MakeW3().get_w3_obj()
         self.contract_info = self.get_contract_info()
@@ -297,9 +298,7 @@ class ContractConnection(object):
 
     def get_contract_info(self):
         '''Returns transaction data from a config file'''
-        with open(tools.get_contr_info_path()) as file:
-            data = file.read()
-            contract_info = json.loads(data)
+        contract_info = json.loads(self.cert_model.certificate_json["badge"]["issuer"]["revocationList"])
         return contract_info
 
     def get_abi(self):
