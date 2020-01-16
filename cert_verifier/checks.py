@@ -1,25 +1,24 @@
+import hashlib
 import json
 import logging
 from datetime import datetime
 from threading import Lock
 
 import bitcoin
-import hashlib
 import pytz
 from bitcoin.signmessage import BitcoinMessage, VerifyMessage
-from cert_schema import BlockcertValidationError
-from cert_schema import normalize_jsonld
 from cert_core import BlockcertVersion, Chain
 from cert_core import chain_to_bitcoin_network
 from cert_core.cert_model.model import SignatureType
+from cert_schema import BlockcertValidationError
+from cert_schema import normalize_jsonld
 from chainpoint3 import Chainpoint
-
-from cert_verifier import StepStatus
-from cert_verifier.errors import InvalidCertificateError
 from ens import ENS
-from web3 import Web3
-from cert_verifier.connectors import ContractConnection, MakeW3
+
 import cert_verifier.path_tools as path_tools
+from cert_verifier import StepStatus
+from cert_verifier.connectors import ContractConnection, MakeW3
+from cert_verifier.errors import InvalidCertificateError
 
 lock = Lock()
 
@@ -133,6 +132,24 @@ class NormalizedJsonLdIntegrityChecker(VerificationCheck):
                                           detect_unmapped_fields=self.detect_unmapped_fields)
             local_hash = hash_normalized(normalized)
             cert_hashes_match = hashes_match(local_hash, self.expected_hash)
+            return cert_hashes_match
+        except BlockcertValidationError:
+            logging.error('Certificate has been modified', exc_info=True)
+            return False
+
+
+class NormalizedJsonLdIntegrityCheckerSC(VerificationCheck):
+    def __init__(self, certificate_model, content_to_verify, expected_hash, detect_unmapped_fields=False):
+        self.content_to_verify = content_to_verify
+        self.expected_hash = expected_hash
+        self.detect_unmapped_fields = detect_unmapped_fields
+
+    def do_execute(self):
+        try:
+            normalized = normalize_jsonld(self.content_to_verify,
+                                          detect_unmapped_fields=self.detect_unmapped_fields)
+            local_hash = hash_normalized(normalized)
+            cert_hashes_match = verify_hash(local_hash, certificate_model)
             return cert_hashes_match
         except BlockcertValidationError:
             logging.error('Certificate has been modified', exc_info=True)
@@ -285,6 +302,54 @@ def create_embedded_signature_verification_group(signatures, transaction_info, c
     return VerificationGroup(steps=[signature_check], name='Checking issuer signature')
 
 
+def create_anchored_data_verification_group(signatures, chain, cert_model=None, transaction_info=None,
+                                            detect_unmapped_fields=False):
+    anchored_data_verification = None
+
+    for s in signatures:
+        if transaction_info is not None:
+            if s.signature_type == SignatureType.signed_transaction:
+                if s.merkle_proof:
+                    steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
+                             NormalizedJsonLdIntegrityChecker(s.content_to_verify, s.merkle_proof.target_hash,
+                                                              detect_unmapped_fields=detect_unmapped_fields)]
+                    if chain != Chain.mockchain and chain != Chain.bitcoin_regtest:
+                        steps.append(MerkleRootIntegrityChecker(s.merkle_proof.merkle_root, transaction_info.op_return))
+
+                    anchored_data_verification = VerificationGroup(
+                        steps=steps,
+                        name='Checking certificate has not been tampered with')
+                else:
+                    if transaction_info is not None:
+                        anchored_data_verification = VerificationGroup(
+                            steps=[BinaryFileIntegrityChecker(s.content_to_verify, transaction_info)],
+                            name='Checking certificate has not been tampered with')
+
+                break
+        else:
+            if s.signature_type == SignatureType.signed_transaction:
+                if s.merkle_proof:
+                    steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
+                             NormalizedJsonLdIntegrityCheckerSC(cert_model, s.content_to_verify,
+                                                                s.merkle_proof.target_hash,
+                                                                detect_unmapped_fields=detect_unmapped_fields)]
+                    if chain != Chain.mockchain and chain != Chain.bitcoin_regtest:
+                        steps.append(MerkleRootIntegrityChecker(s.merkle_proof.merkle_root, transaction_info.op_return))
+
+                    anchored_data_verification = VerificationGroup(
+                        steps=steps,
+                        name='Checking certificate has not been tampered with')
+                else:
+                    if transaction_info is not None:
+                        anchored_data_verification = VerificationGroup(
+                            steps=[BinaryFileIntegrityChecker(s.content_to_verify, transaction_info)],
+                            name='Checking certificate has not been tampered with')
+
+                break
+            pass
+    return anchored_data_verification
+
+
 def create_anchored_data_verification_group(signatures, chain, transaction_info=None, detect_unmapped_fields=False):
     anchored_data_verification = None
     for s in signatures:
@@ -293,8 +358,6 @@ def create_anchored_data_verification_group(signatures, chain, transaction_info=
                 steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
                          NormalizedJsonLdIntegrityChecker(s.content_to_verify, s.merkle_proof.target_hash,
                                                           detect_unmapped_fields=detect_unmapped_fields)]
-                if chain != Chain.mockchain and chain != Chain.bitcoin_regtest and transaction_info is not None:
-                    steps.append(MerkleRootIntegrityChecker(s.merkle_proof.merkle_root, transaction_info.op_return))
 
                 anchored_data_verification = VerificationGroup(
                     steps=steps,
@@ -328,9 +391,8 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
         steps = []
         # transaction-anchored data. All versions must have this. In V2 we add an extra check for unmapped fields
         detect_unmapped_fields = v2ish
-        transaction_signature_group = create_anchored_data_verification_group(certificate_model.signatures,
-                                                                              chain,
-                                                                              transaction_info,
+        transaction_signature_group = create_anchored_data_verification_group(certificate_model.signatures, chain,
+                                                                              certificate_model, transaction_info,
                                                                               detect_unmapped_fields)
         if not transaction_signature_group:
             raise InvalidCertificateError('Did not find transaction verification info in certificate')
@@ -357,7 +419,8 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
         # embedded signature: V1.1. and V1.2 must have this
         if not v2ish:
             embedded_signature_group = create_embedded_signature_verification_group(certificate_model.signatures,
-                                                                                    transaction_info, chain)
+                                                                                    transaction_info, chain,
+                                                                                    certificate_model)
             if not embedded_signature_group:
                 raise InvalidCertificateError('Did not find signature verification info in certificate')
             steps.append(embedded_signature_group)
@@ -391,4 +454,3 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
         if chain == Chain.mockchain or chain == Chain.bitcoin_regtest:
             return VerificationGroup(steps=steps, name='Validation', success_status=StepStatus.mock_passed)
     return VerificationGroup(steps=steps, name='Validation')
-
