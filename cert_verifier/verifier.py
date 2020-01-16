@@ -11,31 +11,20 @@ Overview of verification steps
 """
 import json
 import sys
-from json import JSONDecodeError
 
 from cert_core import to_certificate_model
 
-from cert_verifier import connectors, config
+from cert_verifier import connectors
 from cert_verifier.checks import create_verification_steps
-from cert_verifier.connectors import ContractConnection, MakeW3
-from ens import ENS
-import cert_verifier.path_tools as path_tools
+
 
 def verify_certificate(certificate_model, options={}):
     messages = []
     if str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth"):
-        validitysum = 0
-        merkleverif = verify_hash(certificate_model.certificate_json["signature"]["merkleRoot"], certificate_model)
-        validitysum += merkleverif["validitycount"]
-        messages.append(merkleverif)
+        verification_steps = create_verification_steps(certificate_model)
+        verification_steps.execute()
+        verification_steps.add_detailed_status(messages)
 
-        targethashverif = verify_hash(certificate_model.certificate_json["signature"]["targetHash"], certificate_model)
-        validitysum += targethashverif["validitycount"]
-        messages.append(targethashverif)
-        if validitysum == 2:
-            messages.append({"status": "validation passed", "name": "validation status"})
-        else:
-            messages.append({"status": "Validation not passed", "name": "validation status"})
 
     else:
         # lookup issuer-hosted information
@@ -55,33 +44,6 @@ def verify_certificate(certificate_model, options={}):
         print(message['name'] + ',' + str(message['status']))
     return messages
 
-
-def verify_hash(hash_val, certificate_model):
-    try:
-        sc = ContractConnection(certificate_model, "blockcertsonchaining")
-    except (KeyError, JSONDecodeError):
-        print("Could not load smart contract")
-    '''Checks if the smart contract was issued and if it is on the revocation list'''
-    cert_status = sc.functions.call("hashes", hash_val)
-
-    if cert_status == 0:
-        return {"validitycount": 0, "name": "ethcheck", "status": " hash is not issued on " + config.config["current_chain"]}
-    elif cert_status == 1:
-        return {"validitycount": 1, "name": "ethcheck", "status": " hash is valid on " + config.config["current_chain"]}
-    elif cert_status == 2:
-        return {"validitycount": 0, "name": "ethcheck", "status": " hash is revoked on " + config.config["current_chain"]}
-
-def ens_checker(certificate_model, ens_name):
-    contract = json.load(certificate_model.certificate_json["badge"]["issuer"]["revocationList"])
-    contract_address = contract["blockcertsonchaining"]["address"]
-    w3_factory = MakeW3()
-    w3 = w3_factory.get_w3_obj()
-    ns = ENS.fromWeb3(w3, "0x112234455C3a32FD11230C42E7Bccd4A84e02010")
-    address = ns.address(ens_name)
-    if address == contract_address:
-        return {"message": "ENS Address matches contract address"}
-    else:
-        return {"message": "ENS Address does not match contract address"}    
 
 def verify_certificate_file(certificate_file_name, transaction_id=None, options={}):
     with open(certificate_file_name, 'rb') as cert_fp:
