@@ -8,7 +8,6 @@ import logging
 import requests
 from cert_core import BlockchainType, BlockcertVersion, Chain
 from cert_core import PUBKEY_PREFIX
-import cert_verifier.path_tools as tools
 from cert_verifier import IssuerInfo, IssuerKey, config
 from cert_verifier import TransactionData
 from cert_verifier.errors import *
