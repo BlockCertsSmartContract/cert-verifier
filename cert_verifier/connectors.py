@@ -298,7 +298,6 @@ class ContractConnection(object):
 
     def get_contract_info(self):
         '''Returns transaction data from a config file'''
-
         contract_info = json.loads(self.cert_model.certificate_json["badge"]["issuer"]["revocationList"])
         return contract_info
 
