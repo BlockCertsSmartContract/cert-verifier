@@ -19,13 +19,15 @@ from cert_verifier.checks import create_verification_steps
 
 
 def verify_certificate(certificate_model, options={}):
+    try:
+        onchaining = str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth")
+    except:
+        onchaining = False
     messages = []
-    if str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth"):
-        verification_steps = create_verification_steps(certificate_model)
+    if onchaining:
+        verification_steps = create_verification_steps(certificate_model, onchaining=onchaining)
         verification_steps.execute()
         verification_steps.add_detailed_status(messages)
-
-
     else:
         # lookup issuer-hosted information
         issuer_info = connectors.get_issuer_info(certificate_model)
