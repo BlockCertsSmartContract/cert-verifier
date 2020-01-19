@@ -312,11 +312,10 @@ def create_anchored_data_verification_group(certificate_model, chain, transactio
             if s.signature_type == SignatureType.signed_transaction:
                 if s.merkle_proof:
                     steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
-                             NormalizedJsonLdIntegrityChecker(s.content_to_verify, s.merkle_proof.target_hash,
-                                                              detect_unmapped_fields=detect_unmapped_fields)]
-                    if chain != Chain.mockchain and chain != Chain.bitcoin_regtest:
-                        steps.append(MerkleRootIntegrityChecker(s.merkle_proof.merkle_root, transaction_info.op_return))
-
+                             NormalizedJsonLdIntegrityCheckerSC(certificate_model,
+                                                                s.content_to_verify,
+                                                                s.merkle_proof.target_hash,
+                                                                detect_unmapped_fields=detect_unmapped_fields)]
                     anchored_data_verification = VerificationGroup(
                         steps=steps,
                         name='Checking certificate has not been tampered with')
