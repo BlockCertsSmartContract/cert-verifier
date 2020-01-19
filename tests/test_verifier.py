@@ -43,6 +43,14 @@ class TestVerify(unittest.TestCase):
         result = verifier.verify_certificate_file('data/2.0-alpha/valid.json')
         self.assertEqual(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
+    def test_verify_cert_file_sc(self):
+        result = verifier.verify_certificate_file('data/sc/validsc.json')
+        self.assertEqual(StepStatus.passed.name, result[0]['status'])
+        self.assertEqual(StepStatus.passed.name, result[1]['status'])
+        self.assertEqual(StepStatus.passed.name, result[2]['status'])
+        #this test will fail after deploying just one new sc with our ens(we will need to set up a special ens entry for this test)
+        self.assertEqual(StepStatus.passed.name, result[3]['status'])
+
     def test_verify_cert_file_v2_alpha_with_v1_issuer(self):
         result = verifier.verify_certificate_file('data/2.0-alpha/valid_v2_certificate_with_v1_issuer.json')
         self.assertEqual(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
