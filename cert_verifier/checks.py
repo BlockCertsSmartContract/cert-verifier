@@ -380,16 +380,16 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
         steps.append(VerificationGroup(steps=[expired_group],
                                        name='Checking certificate has not expired'))
 
-        # ens check
-        ens_group = EnsChecker(certificate_model, certificate_model.certificate_json["badge"]["issuer"]["id"])
-        steps.append(VerificationGroup(steps=[ens_group], name='Checking if ens contains contract address'))
-
         # hash check
         hash_group = HashValidityChecker(certificate_model.certificate_json["signature"]["merkleRoot"],
                                          certificate_model.certificate_json["signature"]["targetHash"],
                                          certificate_model)
         steps.append(VerificationGroup(steps=[hash_group],
                                        name='Checking if hash is valid'))
+
+        # ens check
+        ens_group = EnsChecker(certificate_model, certificate_model.certificate_json["badge"]["issuer"]["id"])
+        steps.append(VerificationGroup(steps=[ens_group], name='Checking if ens contains contract address'))
 
         return VerificationGroup(steps=steps, name='Validation')
     else:
