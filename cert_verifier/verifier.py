@@ -17,10 +17,9 @@ from cert_core import to_certificate_model
 from cert_verifier import connectors
 from cert_verifier.checks import create_verification_steps
 
-
 def verify_certificate(certificate_model, options={}):
     try:
-        onchaining = str(certificate_model.certificate_json["badge"]["issuer"]["id"]).endswith(".eth")
+        onchaining = str(certificate_model.issuer.id).endswith(".eth")
     except:
         onchaining = False
     messages = []

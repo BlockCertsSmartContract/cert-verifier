@@ -6,6 +6,7 @@ import json
 import logging
 
 import requests
+
 from cert_core import BlockchainType, BlockcertVersion, Chain
 from cert_core import PUBKEY_PREFIX
 from cert_verifier import IssuerInfo, IssuerKey, config

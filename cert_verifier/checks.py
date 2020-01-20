@@ -265,7 +265,7 @@ class EnsChecker(VerificationCheck):
         self.ens_name = ens_name
 
     def do_execute(self):
-        contract = json.loads(self.cert_model.certificate_json["badge"]["issuer"]["revocationList"])
+        contract = json.loads(self.cert_model.issuer.revocation_url)
         contract_address = contract["blockcertsonchaining"]["address"]
         w3_factory = MakeW3()
         w3 = w3_factory.get_w3_obj()
@@ -281,7 +281,7 @@ class HashValidityChecker(VerificationCheck):
         self.certificate_model = certificate_model
 
     def do_execute(self):
-        merkleverif = verify_hash(self.merkleRoot, self.certificate_model)
+        merkleverif = verify_hash(self.merkleRoot, self.certificate_model, True)
         validity = merkleverif["validity"]
 
         targethashverif = verify_hash(self.targetHash, self.certificate_model)
@@ -340,6 +340,7 @@ def create_anchored_data_verification_group(certificate_model, chain, transactio
             pass
     return anchored_data_verification
 
+
 def create_revocation_verification_group(certificate_model, issuer_info, transaction_info):
     if issuer_info.revocation_keys:
         revocation_check = RevocationChecker(certificate_model.revocation_addresses,
@@ -381,10 +382,8 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
                                        name='Checking if hash is valid'))
 
         # ens check
-        ens_group = EnsChecker(certificate_model, certificate_model.certificate_json["badge"]["issuer"]["id"])
+        ens_group = EnsChecker(certificate_model, certificate_model.issuer.id)
         steps.append(VerificationGroup(steps=[ens_group], name='Checking if ens contains contract address'))
-
-        return VerificationGroup(steps=steps, name='Validation')
     else:
         # embedded signature: V1.1. and V1.2 must have this
         if not v2ish:
