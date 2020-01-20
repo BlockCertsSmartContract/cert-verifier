@@ -32,7 +32,7 @@ def hashes_match(actual_hash, expected_hash):
     return actual_hash in expected_hash or actual_hash == expected_hash
 
 
-def verify_hash(hash_val, certificate_model):
+def verify_hash(hash_val, certificate_model, is_batch_hash=False):
     try:
         sc = ContractConnection(certificate_model, "blockcertsonchaining")
     except (KeyError, JSONDecodeError):
@@ -41,7 +41,11 @@ def verify_hash(hash_val, certificate_model):
     cert_status = sc.functions.call("hashes", hash_val)
 
     if cert_status == 0:
-        return {"validity": False, "name": "ethcheck",
+        if not is_batch_hash:
+            result = True
+        else:
+            result = False
+        return {"validity": result, "name": "ethcheck",
                 "status": " hash is not issued on " + config.config["current_chain"]}
     elif cert_status == 1:
         return {"validity": True, "name": "ethcheck", "status": " hash is valid on " + config.config["current_chain"]}
@@ -150,6 +154,7 @@ class NormalizedJsonLdIntegrityCheckerSC(VerificationCheck):
             normalized = normalize_jsonld(self.content_to_verify,
                                           detect_unmapped_fields=self.detect_unmapped_fields)
             local_hash = hash_normalized(normalized)
+            #TODO: Fix this
             cert_hashes_match = verify_hash(local_hash, self.certificate_model)
             return cert_hashes_match
         except BlockcertValidationError:
@@ -374,12 +379,14 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
         steps.append(VerificationGroup(steps=[expired_group],
                                        name='Checking certificate has not expired'))
 
-        # hash check
-        hash_group = HashValidityChecker(certificate_model.certificate_json["signature"]["merkleRoot"],
-                                         certificate_model.certificate_json["signature"]["targetHash"],
-                                         certificate_model)
-        steps.append(VerificationGroup(steps=[hash_group],
-                                       name='Checking if hash is valid'))
+        for s in certificate_model.signatures:
+            if s.merkle_proof:
+                # hash check
+                hash_group = HashValidityChecker(s.merkle_proof.merkle_root,
+                                                 s.merkle_proof.target_hash,
+                                                 certificate_model)
+                steps.append(VerificationGroup(steps=[hash_group],
+                                               name='Checking if hash is valid'))
 
         # ens check
         ens_group = EnsChecker(certificate_model, certificate_model.issuer.id)

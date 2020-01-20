@@ -17,12 +17,13 @@ from cert_core import to_certificate_model
 from cert_verifier import connectors
 from cert_verifier.checks import create_verification_steps
 
+
 def verify_certificate(certificate_model, options=None):
     if options is None:
         options = {}
     try:
         onchaining = str(certificate_model.issuer.id).endswith(".eth")
-    except:
+    except TypeError:
         onchaining = False
     messages = []
     if onchaining:
