@@ -34,7 +34,7 @@ def hashes_match(actual_hash, expected_hash):
 
 def verify_hash(hash_val, certificate_model, is_batch_hash=False):
     try:
-        sc = ContractConnection(certificate_model, "blockcertsonchaining")
+        sc = ContractConnection(certificate_model)
     except (KeyError, JSONDecodeError):
         print("Could not load smart contract")
     '''Checks if the smart contract was issued and if it is on the revocation list'''
