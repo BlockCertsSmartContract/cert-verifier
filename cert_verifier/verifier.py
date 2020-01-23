@@ -23,8 +23,7 @@ def verify_certificate(certificate_model, options=None):
         options = {}
     try:
         onchaining = certificate_model.certificate_json["signature"]["anchors"][0]["type"] == "ETHSmartContract"
-    except (KeyError) as e:
-        print(e)
+    except (TypeError, KeyError):
         onchaining = False
     messages = []
     if onchaining:

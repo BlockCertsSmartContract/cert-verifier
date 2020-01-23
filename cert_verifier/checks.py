@@ -265,18 +265,17 @@ class AuthenticityChecker(VerificationCheck):
 
 
 class EnsChecker(VerificationCheck):
-    def __init__(self, cert_model, ens_name):
-        self.cert_model = cert_model
-        self.ens_name = ens_name
+    def __init__(self, cert_model):
+        self.ens_name = cert_model.certificate_json["signature"]["anchors"][0]["ens_name"]
+        self.contract_address = cert_model.certificate_json["signature"]["anchors"][0]["sourceId"]
 
     def do_execute(self):
-        contract = json.loads(self.cert_model.issuer.revocation_url)
-        contract_address = contract["blockcertsonchaining"]["address"]
+
         w3_factory = MakeW3()
         w3 = w3_factory.get_w3_obj()
         ns = ENS.fromWeb3(w3, "0x112234455C3a32FD11230C42E7Bccd4A84e02010")
         address = ns.address(self.ens_name)
-        return address == contract_address
+        return address == self.contract_address
 
 
 class HashValidityChecker(VerificationCheck):
@@ -286,11 +285,15 @@ class HashValidityChecker(VerificationCheck):
         self.certificate_model = certificate_model
 
     def do_execute(self):
-        merkleverif = verify_hash(self.merkleRoot, self.certificate_model, True)
-        validity = merkleverif["validity"]
+        if(self.merkleRoot == self.targetHash):
+            targethashverif = verify_hash(self.targetHash, self.certificate_model)
+            validity = targethashverif["validity"]
+        else:
+            merkleverif = verify_hash(self.merkleRoot, self.certificate_model, True)
+            validity = merkleverif["validity"]
 
-        targethashverif = verify_hash(self.targetHash, self.certificate_model)
-        validity &= targethashverif["validity"]
+            targethashverif = verify_hash(self.targetHash, self.certificate_model)
+            validity &= targethashverif["validity"]
 
         return validity
 
@@ -389,7 +392,7 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
                                                name='Checking if hash is valid'))
 
         # ens check
-        ens_group = EnsChecker(certificate_model, certificate_model.issuer.id)
+        ens_group = EnsChecker(certificate_model)
         steps.append(VerificationGroup(steps=[ens_group], name='Checking if ens contains contract address'))
     else:
         # embedded signature: V1.1. and V1.2 must have this
