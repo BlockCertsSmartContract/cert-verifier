@@ -39,19 +39,19 @@ def verify_hash(hash_val, certificate_model, is_batch_hash=False):
         print("Could not load smart contract")
     '''Checks if the smart contract was issued and if it is on the revocation list'''
     cert_status = sc.functions.call("hashes", hash_val)
-
+    cur_chain = certificate_model.certificate_json["signature"]["anchors"][0]["chain"]
     if cert_status == 0:
         if not is_batch_hash:
             result = True
         else:
             result = False
         return {"validity": result, "name": "ethcheck",
-                "status": " hash is not issued on " + certificate_model.certificate_json["signature"]["anchors"][0]["chain"]}
+                "status": " hash is not issued on " + cur_chain}
     elif cert_status == 1:
-        return {"validity": True, "name": "ethcheck", "status": " hash is valid on " + certificate_model.certificate_json["signature"]["anchors"][0]["chain"]}
+        return {"validity": True, "name": "ethcheck", "status": " hash is valid on " + cur_chain}
     elif cert_status == 2:
         return {"validity": False, "name": "ethcheck",
-                "status": " hash is revoked on " + certificate_model.certificate_json["signature"]["anchors"][0]["chain"]}
+                "status": " hash is revoked on " + cur_chain}
 
 
 class VerificationCheck(object):
