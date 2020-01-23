@@ -37,7 +37,6 @@ def verify_hash(hash_val, certificate_model, is_batch_hash=False):
         sc = ContractConnection(certificate_model)
     except (KeyError, JSONDecodeError):
         print("Could not load smart contract")
-    '''Checks if the smart contract was issued and if it is on the revocation list'''
     cert_status = sc.functions.call("hashes", hash_val)
     cur_chain = certificate_model.certificate_json["signature"]["anchors"][0]["chain"]
     if cert_status == 0:
@@ -154,8 +153,8 @@ class NormalizedJsonLdIntegrityCheckerSC(VerificationCheck):
             normalized = normalize_jsonld(self.content_to_verify,
                                           detect_unmapped_fields=self.detect_unmapped_fields)
             local_hash = hash_normalized(normalized)
-            #TODO: Fix this
-            cert_hashes_match = verify_hash(local_hash, self.certificate_model)
+            #TODO: Fix this (build local hash up to merkle hash)
+            cert_hashes_match = hashes_match(local_hash, self.expected_hash)
             return cert_hashes_match
         except BlockcertValidationError:
             logging.error('Certificate has been modified', exc_info=True)
@@ -279,20 +278,20 @@ class EnsChecker(VerificationCheck):
 
 
 class HashValidityChecker(VerificationCheck):
-    def __init__(self, merkleRoot, targetHash, certificate_model):
-        self.merkleRoot = merkleRoot
-        self.targetHash = targetHash
+    def __init__(self, merkle_root, target_hash, certificate_model):
+        self.merkle_root = merkle_root
+        self.target_hash = target_hash
         self.certificate_model = certificate_model
 
     def do_execute(self):
-        if(self.merkleRoot == self.targetHash):
-            targethashverif = verify_hash(self.targetHash, self.certificate_model)
+        if self.merkle_root == self.target_hash:
+            targethashverif = verify_hash(self.target_hash, self.certificate_model, True)
             validity = targethashverif["validity"]
         else:
-            merkleverif = verify_hash(self.merkleRoot, self.certificate_model, True)
+            merkleverif = verify_hash(self.merkle_root, self.certificate_model, True)
             validity = merkleverif["validity"]
 
-            targethashverif = verify_hash(self.targetHash, self.certificate_model)
+            targethashverif = verify_hash(self.target_hash, self.certificate_model)
             validity &= targethashverif["validity"]
 
         return validity
@@ -327,6 +326,7 @@ def create_anchored_data_verification_group(certificate_model, chain, transactio
                     anchored_data_verification = VerificationGroup(
                         steps=steps,
                         name='Checking certificate has not been tampered with')
+
                 break
         else:
             if s.signature_type == SignatureType.signed_transaction:
