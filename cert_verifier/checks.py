@@ -16,7 +16,7 @@ from cert_schema import normalize_jsonld
 from chainpoint3 import Chainpoint
 from ens import ENS
 
-from cert_verifier import StepStatus, config
+from cert_verifier import StepStatus
 from cert_verifier.connectors import ContractConnection, MakeW3
 from cert_verifier.errors import InvalidCertificateError
 
@@ -46,12 +46,12 @@ def verify_hash(hash_val, certificate_model, is_batch_hash=False):
         else:
             result = False
         return {"validity": result, "name": "ethcheck",
-                "status": " hash is not issued on " + config.config["current_chain"]}
+                "status": " hash is not issued on " + certificate_model.certificate_json["signature"]["anchors"][0]["chain"]}
     elif cert_status == 1:
-        return {"validity": True, "name": "ethcheck", "status": " hash is valid on " + config.config["current_chain"]}
+        return {"validity": True, "name": "ethcheck", "status": " hash is valid on " + certificate_model.certificate_json["signature"]["anchors"][0]["chain"]}
     elif cert_status == 2:
         return {"validity": False, "name": "ethcheck",
-                "status": " hash is revoked on " + config.config["current_chain"]}
+                "status": " hash is revoked on " + certificate_model.certificate_json["signature"]["anchors"][0]["chain"]}
 
 
 class VerificationCheck(object):

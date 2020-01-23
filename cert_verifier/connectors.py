@@ -9,7 +9,7 @@ import requests
 
 from cert_core import BlockchainType, BlockcertVersion, Chain
 from cert_core import PUBKEY_PREFIX
-from cert_verifier import IssuerInfo, IssuerKey, config
+from cert_verifier import IssuerInfo, IssuerKey
 from cert_verifier import TransactionData
 from cert_verifier.errors import *
 from web3 import Web3, HTTPProvider
@@ -256,12 +256,9 @@ class MakeW3(object):
 
     def __init__(self):
         '''Defines public & private keys of a wallet, defines an ethereum node, that will be used for communication with blockchain'''
-        self.privkey = config.config["wallets"][config.config["current_chain"]]["privkey"]
-        self.url = config.config["wallets"][config.config["current_chain"]]["url"]
+
+        self.url = "https://ropsten.infura.io/v3/a70de76e3fd748cbb6dbb2ed49dda183"
         self.w3 = self.create_w3_obj()
-        account = self.get_w3_wallet()
-        self.pubkey = account.address
-        self.w3.eth.defaultAccount = self.pubkey
 
     def create_w3_obj(self):
         '''Instantiates a web3 connection with ethereum node'''
@@ -270,9 +267,6 @@ class MakeW3(object):
     def get_w3_obj(self):
         return self.w3
 
-    def get_w3_wallet(self):
-        '''Connects a private key to the account that is going to be used for the transaction'''
-        return self.w3.eth.account.from_key(self.privkey)
 
 
 class ContractConnection(object):
@@ -313,41 +307,6 @@ class ContractFunctions(object):
     def __init__(self, w3, contract_obj):
         self.w3 = w3
         self.contract_obj = contract_obj
-        current_chain = config.config["current_chain"]
-        self.privkey = config.config["wallets"][config.config["current_chain"]]["privkey"]
-        account = self.w3.eth.account.from_key(self.privkey)
-        self.acct_addr = account.address
-
-    def get_tx_options(self, estimated_gas):
-        '''Returns raw transaction'''
-        return {
-            'nonce': self.w3.eth.getTransactionCount(self.acct_addr),
-            'gas': estimated_gas
-        }
-
-    def transact(self, method, *argv):
-        '''Sends a signed transaction on the blockchain and waits for a response'''
-        acct = self.w3.eth.account.from_key(self.privkey)
-        # gas estimation
-        estimated_gas = self.contract_obj.functions[method](*argv).estimateGas()
-        print("Estimated gas for " + str(method) + ": " + str(estimated_gas))
-        tx_options = self.get_tx_options(estimated_gas)
-        # building a transaction
-        construct_txn = self.contract_obj.functions[method](*argv).buildTransaction(tx_options)
-        # signing a transaction
-        signed = acct.sign_transaction(construct_txn)
-        # sending a transaction to the blockchain and waiting for a response
-        tx_hash = self.w3.eth.sendRawTransaction(signed.rawTransaction)
-        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
-        print("Gas used: " + str(method) + ": " + str(tx_receipt.gasUsed))
-
-    def constructor(self):
-        acct = self.w3.eth.account.from_key(self.privkey)
-        tx_options = self.get_tx_options()
-        construct_txn = self.contract_obj.constructor().buildTransaction(tx_options)
-        signed = acct.sign_transaction(construct_txn)
-        tx_hash = self.w3.eth.sendRawTransaction(signed.rawTransaction)
-        self.w3.eth.waitForTransactionReceipt(tx_hash)
 
     def call(self, method, *argv):
         return self.contract_obj.functions[method](*argv).call()
