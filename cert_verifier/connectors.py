@@ -9,7 +9,7 @@ import requests
 
 from cert_core import BlockchainType, BlockcertVersion, Chain
 from cert_core import PUBKEY_PREFIX
-from cert_verifier import IssuerInfo, IssuerKey
+from cert_verifier import IssuerInfo, IssuerKey, config
 from cert_verifier import TransactionData
 from cert_verifier.errors import *
 from web3 import Web3, HTTPProvider
@@ -250,14 +250,13 @@ def get_issuer_info(certificate_model):
             return issuer_info
 
 class MakeW3(object):
-    '''Defines a private key of an ethereum wallet to be used for the transaction, 
-        node url to be used for communication with ethereum blockchain and instantiates the
+    '''Defines a node url to be used for communication with ethereum blockchain and instantiates the
         web3 connection with ethereum node '''
 
     def __init__(self):
-        '''Defines public & private keys of a wallet, defines an ethereum node, that will be used for communication with blockchain'''
+        '''Defines an ethereum node, that will be used for communication with blockchain'''
 
-        self.url = "https://ropsten.infura.io/v3/a70de76e3fd748cbb6dbb2ed49dda183"
+        self.url = config.infura_node
         self.w3 = self.create_w3_obj()
 
     def create_w3_obj(self):
