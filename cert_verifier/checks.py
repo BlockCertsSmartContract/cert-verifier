@@ -153,7 +153,6 @@ class NormalizedJsonLdIntegrityCheckerSC(VerificationCheck):
             normalized = normalize_jsonld(self.content_to_verify,
                                           detect_unmapped_fields=self.detect_unmapped_fields)
             local_hash = hash_normalized(normalized)
-            #TODO: Fix this (build local hash up to merkle hash)
             cert_hashes_match = hashes_match(local_hash, self.expected_hash)
             return cert_hashes_match
         except BlockcertValidationError:

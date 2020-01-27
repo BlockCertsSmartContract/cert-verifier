@@ -44,7 +44,7 @@ class TestVerify(unittest.TestCase):
         self.assertEqual(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
     def test_verify_cert_file_sc(self):
-        result = verifier.verify_certificate_file('data/sc/validsc.json')
+        result = verifier.verify_certificate_file('data/sc/valid.json')
         self.assertEqual(StepStatus.passed.name, result[0]['status'])
         self.assertEqual(StepStatus.passed.name, result[1]['status'])
         self.assertEqual(StepStatus.passed.name, result[2]['status'])
