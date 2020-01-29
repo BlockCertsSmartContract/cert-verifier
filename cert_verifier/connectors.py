@@ -255,7 +255,11 @@ class MakeW3(object):
 
     def __init__(self):
         '''Defines an ethereum node, that will be used for communication with blockchain'''
-
+        try:
+            parsed_config = config.get_config()
+        except ValueError:
+            parsed_config = config.CONFIG
+        
         self.url = config.infura_node
         self.w3 = self.create_w3_obj()
 
