@@ -260,7 +260,7 @@ class MakeW3(object):
         except ValueError:
             parsed_config = config.CONFIG
         
-        self.url = config.infura_node
+        self.url = parsed_config.infura_node
         self.w3 = self.create_w3_obj()
 
     def create_w3_obj(self):
