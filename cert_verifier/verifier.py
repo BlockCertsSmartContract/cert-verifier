@@ -14,7 +14,7 @@ import sys
 
 from cert_core import to_certificate_model
 
-from cert_verifier import connectors
+from cert_verifier import connectors, printer
 from cert_verifier.checks import create_verification_steps
 
 
@@ -44,8 +44,8 @@ def verify_certificate(certificate_model, options=None):
 
         verification_steps.execute()
         verification_steps.add_detailed_status(messages)
-    for message in messages:
-        print(message['name'] + ',' + str(message['status']))
+    printer.print_issuer_information(certificate_model.certificate_json)
+    printer.print_verification_information(messages)
     return messages
 
 
@@ -57,15 +57,16 @@ def verify_certificate_file(certificate_file_name, transaction_id=None, options=
                                                  txid=transaction_id,
                                                  certificate_bytes=certificate_bytes)
         result = verify_certificate(certificate_model, options)
+
     return result
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         for cert_file in sys.argv[1:]:
-            print(cert_file)
-            result = verify_certificate_file(cert_file)
-            print(result)
+            printer.print_certfile_information(cert_file)
+            verify_certificate_file(cert_file)
     else:
-        result = verify_certificate_file('../tests/data/2.0/valid.json')
-        print(result)
+        default_certfile = '../tests/data/2.0/valid.json'
+        printer.print_certfile_information(default_certfile)
+        verify_certificate_file(default_certfile)

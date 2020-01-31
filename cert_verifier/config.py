@@ -17,7 +17,6 @@ def add_arguments(p):
 
 
 def read_config():
-    print(cwd)
     p = configargparse.getArgumentParser(default_config_files=[os.path.join(cwd, 'config.ini')])
     add_arguments(p)
     parsed_config, _ = p.parse_known_args()
