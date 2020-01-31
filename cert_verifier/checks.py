@@ -39,18 +39,22 @@ def verify_hash(hash_val, certificate_model, is_batch_hash=False):
     except (KeyError, JSONDecodeError):
         print("Could not load smart contract")
     cert_status = sc.functions.call("hashes", hash_val)
-    cur_chain = certificate_model.certificate_json["signature"]["anchors"][0]["chain"]
+    cur_chain = config.get_chain()
     if cert_status == 0:
         if not is_batch_hash:
             result = True
         else:
             result = False
-        return {"validity": result, "name": "ethcheck",
+        return {"validity": result,
+                "name": "ethcheck",
                 "status": " hash is not issued on " + cur_chain}
     elif cert_status == 1:
-        return {"validity": True, "name": "ethcheck", "status": " hash is valid on " + cur_chain}
+        return {"validity": True,
+                "name": "ethcheck",
+                "status": " hash is valid on " + cur_chain}
     elif cert_status == 2:
-        return {"validity": False, "name": "ethcheck",
+        return {"validity": False,
+                "name": "ethcheck",
                 "status": " hash is revoked on " + cur_chain}
 
 

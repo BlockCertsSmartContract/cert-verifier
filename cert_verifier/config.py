@@ -1,4 +1,5 @@
 import os
+
 import configargparse
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -31,10 +32,16 @@ def init_config():
         return _CONFIG
 
 
+def get_chain():
+    init_config()
+    global _CONFIG
+    return _CONFIG["chain"]
+
+
 def get_infura():
     init_config()
     global _CONFIG
-    if _CONFIG["chain"] == "mainnet":
+    if get_chain() == "mainnet":
         return _CONFIG["infura_mainnet"]
     else:
         return _CONFIG["infura_ropsten"]
@@ -43,7 +50,7 @@ def get_infura():
 def get_registry():
     init_config()
     global _CONFIG
-    if _CONFIG["chain"] == "mainnet":
+    if get_chain() == "mainnet":
         return _CONFIG["ethereum_mainnet"]
     else:
         return _CONFIG["ethereum_ropsten"]

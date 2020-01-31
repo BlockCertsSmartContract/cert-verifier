@@ -249,6 +249,7 @@ def get_issuer_info(certificate_model):
             issuer_info = IssuerInfo([issuer_key], revocation_keys=[revocation_key])
             return issuer_info
 
+
 class MakeW3(object):
     '''Defines a node url to be used for communication with ethereum blockchain and instantiates the
         web3 connection with ethereum node '''
@@ -266,7 +267,6 @@ class MakeW3(object):
         return self.w3
 
 
-
 class ContractConnection(object):
     '''Collects abi, address, contract data and instantiates a contract object'''
 
@@ -282,10 +282,6 @@ class ContractConnection(object):
         address = self.get_address()
         abi = self.get_abi()
         return self.w3.eth.contract(address=address, abi=abi)
-
-    def get_contract_object(self):
-        '''Returns instantiated contract'''
-        return self.contract_obj
 
     def get_contract_info(self):
         '''Returns transaction data from a config file'''
