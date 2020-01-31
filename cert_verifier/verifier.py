@@ -22,12 +22,12 @@ def verify_certificate(certificate_model, options=None):
     if options is None:
         options = {}
     try:
-        onchaining = certificate_model.certificate_json["signature"]["anchors"][0]["type"] == "ETHSmartContract"
+        is_issued_on_smartcontract = certificate_model.certificate_json["signature"]["anchors"][0]["type"] == "ETHSmartContract"
     except (TypeError, KeyError):
-        onchaining = False
+        is_issued_on_smartcontract = False
     messages = []
-    if onchaining:
-        verification_steps = create_verification_steps(certificate_model, onchaining=onchaining)
+    if is_issued_on_smartcontract:
+        verification_steps = create_verification_steps(certificate_model, is_issued_on_smartcontract=is_issued_on_smartcontract)
         verification_steps.execute()
         verification_steps.add_detailed_status(messages)
     else:

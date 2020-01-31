@@ -14,6 +14,7 @@ from cert_core.cert_model.model import SignatureType
 from cert_schema import BlockcertValidationError
 from cert_schema import normalize_jsonld
 from chainpoint3 import Chainpoint
+from cert_verifier import config
 from ens import ENS
 
 from cert_verifier import StepStatus
@@ -268,10 +269,10 @@ class EnsChecker(VerificationCheck):
         self.contract_address = cert_model.certificate_json["signature"]["anchors"][0]["sourceId"]
 
     def do_execute(self):
-
+        registry = config.get_registry()
         w3_factory = MakeW3()
         w3 = w3_factory.get_w3_obj()
-        ns = ENS.fromWeb3(w3, "0x112234455C3a32FD11230C42E7Bccd4A84e02010")
+        ns = ENS.fromWeb3(w3, registry)
         address = ns.address(self.ens_name)
         return address == self.contract_address
 
@@ -310,11 +311,11 @@ def create_embedded_signature_verification_group(signatures, transaction_info, c
 
 
 def create_anchored_data_verification_group(certificate_model, chain, transaction_info=None,
-                                            detect_unmapped_fields=False, onchaining=False):
+                                            detect_unmapped_fields=False, is_issued_on_smartcontract=False):
     anchored_data_verification = None
     signatures = certificate_model.signatures
     for s in signatures:
-        if onchaining:
+        if is_issued_on_smartcontract:
             if s.signature_type == SignatureType.signed_transaction:
                 if s.merkle_proof:
                     steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
@@ -360,10 +361,10 @@ def create_revocation_verification_group(certificate_model, issuer_info, transac
     return VerificationGroup(steps=[revocation_check], name='Checking not revoked by issuer')
 
 
-def create_verification_steps(certificate_model, transaction_info=None, issuer_info=None, chain=None, onchaining=False):
+def create_verification_steps(certificate_model, transaction_info=None, issuer_info=None, chain=None, is_issued_on_smartcontract=False):
     steps = []
     v2ish = certificate_model.version == BlockcertVersion.V2 or certificate_model.version == BlockcertVersion.V2_ALPHA
-    if onchaining:
+    if is_issued_on_smartcontract:
         steps = []
         # transaction-anchored data. All versions must have this. In V2 we add an extra check for unmapped fields
         detect_unmapped_fields = v2ish
@@ -371,7 +372,7 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
                                                                               chain,
                                                                               transaction_info=transaction_info,
                                                                               detect_unmapped_fields=detect_unmapped_fields,
-                                                                              onchaining=onchaining)
+                                                                              is_issued_on_smartcontract=is_issued_on_smartcontract)
         if not transaction_signature_group:
             raise InvalidCertificateError('Did not find transaction verification info in certificate')
         steps.append(transaction_signature_group)

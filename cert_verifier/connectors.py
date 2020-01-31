@@ -2,7 +2,6 @@
 Connectors supporting Bitcoin transaction lookups. This is used in the Blockchain Certificates project
 (http://www.blockcerts.org/) for validating certificates on the blockchain.
 """
-import json
 import logging
 
 import requests
@@ -68,6 +67,7 @@ class MockConnector(TransactionLookupConnector):
 
     def lookup_tx(self, txid):
         return True
+
 
 class FallbackConnector(TransactionLookupConnector):
     def __init__(self, chain):
@@ -255,12 +255,7 @@ class MakeW3(object):
 
     def __init__(self):
         '''Defines an ethereum node, that will be used for communication with blockchain'''
-        try:
-            parsed_config = config.get_config()
-        except ValueError:
-            parsed_config = config.CONFIG
-        
-        self.url = parsed_config.infura_ropsten
+        self.url = config.get_infura()
         self.w3 = self.create_w3_obj()
 
     def create_w3_obj(self):
