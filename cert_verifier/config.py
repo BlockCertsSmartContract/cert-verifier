@@ -1,7 +1,7 @@
 import os
 import configargparse
 
-cwd = os.getcwd()
+cwd = os.path.dirname(os.path.abspath(__file__))
 _CONFIG = None
 
 
@@ -16,8 +16,8 @@ def add_arguments(p):
 
 
 def read_config():
-    p = configargparse.getArgumentParser(default_config_files=[os.path.join(cwd, 'config.ini')])
     print(cwd)
+    p = configargparse.getArgumentParser(default_config_files=[os.path.join(cwd, 'config.ini')])
     add_arguments(p)
     parsed_config, _ = p.parse_known_args()
     return vars(parsed_config)
@@ -34,20 +34,16 @@ def init_config():
 def get_infura():
     init_config()
     global _CONFIG
-    if _CONFIG["chain"] == "ropsten":
-        return _CONFIG["infura_ropsten"]
-    elif _CONFIG["chain"] == "mainnet":
+    if _CONFIG["chain"] == "mainnet":
         return _CONFIG["infura_mainnet"]
     else:
-        return False
+        return _CONFIG["infura_ropsten"]
 
 
 def get_registry():
     init_config()
     global _CONFIG
-    if _CONFIG["chain"] == "ropsten":
-        return _CONFIG["ethereum_ropsten"]
-    elif _CONFIG["chain"] == "mainnet":
+    if _CONFIG["chain"] == "mainnet":
         return _CONFIG["ethereum_mainnet"]
     else:
-        return False
+        return _CONFIG["ethereum_ropsten"]
