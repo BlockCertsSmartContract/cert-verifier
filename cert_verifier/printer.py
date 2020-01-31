@@ -1,7 +1,6 @@
 def print_issuer_information(cert_json):
+    print("Issuer information from cert")
     try:
-        cert_json['certificate']['issuer']
-        print("Issuer information from cert")
         print("Issuer        | {}".format(cert_json['certificate']['issuer']['name']))
         print("Issuer URL    | {}".format(cert_json['certificate']['issuer']['url']))
         print("Issuer E-Mail | {}".format(cert_json['certificate']['issuer']['email']))
@@ -9,8 +8,6 @@ def print_issuer_information(cert_json):
         pass
 
     try:
-        cert_json['badge']['issuer']
-        print("Issuer information from cert")
         print("Issuer        | {}".format(cert_json['badge']['issuer']['name']))
         print("Issuer URL    | {}".format(cert_json['badge']['issuer']['url']))
         print("Issuer E-Mail | {}".format(cert_json['badge']['issuer']['email']))
