@@ -320,18 +320,14 @@ def create_anchored_data_verification_group(certificate_model, chain, transactio
     signatures = certificate_model.signatures
     for s in signatures:
         if is_issued_on_smartcontract:
-            if s.signature_type == SignatureType.signed_transaction:
-                if s.merkle_proof:
-                    steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
-                             NormalizedJsonLdIntegrityCheckerSC(certificate_model,
-                                                                s.content_to_verify,
-                                                                s.merkle_proof.target_hash,
-                                                                detect_unmapped_fields=detect_unmapped_fields)]
-                    anchored_data_verification = VerificationGroup(
-                        steps=steps,
-                        name='Checking certificate has not been tampered with')
-
-                break
+            steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
+                     NormalizedJsonLdIntegrityCheckerSC(certificate_model,
+                                                        s.content_to_verify,
+                                                        s.merkle_proof.target_hash,
+                                                        detect_unmapped_fields=detect_unmapped_fields)]
+            anchored_data_verification = VerificationGroup(
+                steps=steps,
+                name='Checking certificate has not been tampered with')
         else:
             if s.signature_type == SignatureType.signed_transaction:
                 if s.merkle_proof:
@@ -387,17 +383,16 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
                                        name='Checking certificate has not expired'))
 
         for s in certificate_model.signatures:
-            if s.merkle_proof:
-                # hash check
-                hash_group = HashValidityChecker(s.merkle_proof.merkle_root,
-                                                 s.merkle_proof.target_hash,
-                                                 certificate_model)
-                steps.append(VerificationGroup(steps=[hash_group],
-                                               name='Checking if hash is valid'))
+            # check if certificates hash is really issued and has not been revoked
+            hash_group = HashValidityChecker(s.merkle_proof.merkle_root,
+                                             s.merkle_proof.target_hash,
+                                             certificate_model)
+            steps.append(VerificationGroup(steps=[hash_group],
+                                           name='Checking if certificate is valid and has not been revoked'))
 
-        # ens check
+        # ens check -> checks if smartcontract in signatures really belongs to the ens entry
         ens_group = EnsChecker(certificate_model)
-        steps.append(VerificationGroup(steps=[ens_group], name='Checking if ens contains contract address'))
+        steps.append(VerificationGroup(steps=[ens_group], name='Checking if certificate is really issued by ens owner'))
     else:
         # embedded signature: V1.1. and V1.2 must have this
         if not v2ish:
