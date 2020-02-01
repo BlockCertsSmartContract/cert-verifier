@@ -1,13 +1,18 @@
 """
 Verify blockchain certificates (http://www.blockcerts.org/)
 
-Overview of verification steps
-- Check integrity: TODO: json-ld normalizatio
+Overview of verification steps non SmartContract variants
+- Check integrity: TODO: json-ld normalization
 - Check signature (pre-v2)
 - Check whether revoked
 - Check whether expired
 - Check authenticity
 
+Overview of verification steps for SmartContract variant
+- Check integrity
+- Check whether expired
+- Check if issued or revoked
+- Check ens entry
 """
 import json
 import sys
