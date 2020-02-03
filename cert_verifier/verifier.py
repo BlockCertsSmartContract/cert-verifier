@@ -50,6 +50,7 @@ def verify_certificate(certificate_model, options=None):
 
 
 def verify_certificate_file(certificate_file_name, transaction_id=None, options={}):
+    printer.print_certfile_information(certificate_file_name)
     with open(certificate_file_name, 'rb') as cert_fp:
         certificate_bytes = cert_fp.read()
         certificate_json = json.loads(certificate_bytes.decode('utf-8'))
@@ -64,9 +65,7 @@ def verify_certificate_file(certificate_file_name, transaction_id=None, options=
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         for cert_file in sys.argv[1:]:
-            printer.print_certfile_information(cert_file)
             verify_certificate_file(cert_file)
     else:
         default_certfile = '../tests/data/2.0/valid.json'
-        printer.print_certfile_information(default_certfile)
         verify_certificate_file(default_certfile)
