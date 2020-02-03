@@ -96,14 +96,17 @@ class TestVerify(unittest.TestCase):
     def test_verify_cert_file_sc_ens_invalid(self):
         result = verifier.verify_certificate_file('data/sc/ens_does_not_match_sc_address.json')
         self.assertEqual(StepStatus.failed.name, result[ENS_RESULT_INDEX]['status'])
+        self.assertEqual(StepStatus.failed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
     def test_verify_cert_file_sc_tampered(self):
         result = verifier.verify_certificate_file('data/sc/invalid_tampered_sc.json')
         self.assertEqual(StepStatus.failed.name, result[INTEGRITY_RESULT_INDEX]['status'])
+        self.assertEqual(StepStatus.failed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
     def test_verify_cert_file_sc_revoked(self):
         result = verifier.verify_certificate_file('data/sc/revoked_sc.json')
         self.assertEqual(StepStatus.failed.name, result[HASH_RESULT_INDEX]['status'])
+        self.assertEqual(StepStatus.failed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
 
 if __name__ == '__main__':
