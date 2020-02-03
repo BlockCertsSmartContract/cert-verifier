@@ -10,6 +10,10 @@ AUTHENTICITY_RESULT_INDEX = -2
 REVOCATION_RESULT_INDEX = -3
 # integrity is first check
 INTEGRITY_RESULT_INDEX = 0
+# ens check
+ENS_RESULT_INDEX = -2
+# hash validity check
+HASH_RESULT_INDEX = -3
 
 class TestVerify(unittest.TestCase):
     # end-to-end tests
@@ -89,22 +93,17 @@ class TestVerify(unittest.TestCase):
         result = verifier.verify_certificate_file('data/2.0/eth_ropsten.json')
         self.assertEquals(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
-    def test_verify_cert_file_sc(self):
+    def test_verify_cert_file_sc_ens_invalid(self):
         result = verifier.verify_certificate_file('data/sc/ens_does_not_match_sc_address.json')
-        self.assertEqual(StepStatus.passed.name, result[0]['status'])
-        self.assertEqual(StepStatus.passed.name, result[1]['status'])
-        self.assertEqual(StepStatus.passed.name, result[2]['status'])
-        self.assertEqual(StepStatus.failed.name, result[3]['status'])
+        self.assertEqual(StepStatus.failed.name, result[ENS_RESULT_INDEX]['status'])
 
     def test_verify_cert_file_sc_tampered(self):
         result = verifier.verify_certificate_file('data/sc/invalid_tampered_sc.json')
-        self.assertEqual(StepStatus.failed.name, result[0]['status'])
+        self.assertEqual(StepStatus.failed.name, result[INTEGRITY_RESULT_INDEX]['status'])
 
-    def test_verify_cert_file_sc_tampered(self):
+    def test_verify_cert_file_sc_revoked(self):
         result = verifier.verify_certificate_file('data/sc/revoked_sc.json')
-        self.assertEqual(StepStatus.passed.name, result[0]['status'])
-        self.assertEqual(StepStatus.passed.name, result[1]['status'])
-        self.assertEqual(StepStatus.failed.name, result[2]['status'])
+        self.assertEqual(StepStatus.failed.name, result[HASH_RESULT_INDEX]['status'])
 
 
 if __name__ == '__main__':
