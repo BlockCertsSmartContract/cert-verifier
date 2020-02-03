@@ -101,8 +101,10 @@ class TestVerify(unittest.TestCase):
         self.assertEqual(StepStatus.failed.name, result[0]['status'])
 
     def test_verify_cert_file_sc_tampered(self):
-        result = verifier.verify_certificate_file('data/sc/invalid_tampered_sc.json')
-        self.assertEqual(StepStatus.failed.name, result[0]['status'])
+        result = verifier.verify_certificate_file('data/sc/revoked_sc.json')
+        self.assertEqual(StepStatus.passed.name, result[0]['status'])
+        self.assertEqual(StepStatus.passed.name, result[1]['status'])
+        self.assertEqual(StepStatus.failed.name, result[2]['status'])
 
 
 if __name__ == '__main__':

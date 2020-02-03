@@ -1,6 +1,6 @@
 import os
-
 import configargparse
+from web3 import Web3, HTTPProvider
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 _CONFIG = None
@@ -49,7 +49,8 @@ def get_infura():
 def get_registry():
     init_config()
     global _CONFIG
+    w3 = Web3(HTTPProvider())
     if get_chain() == "mainnet":
-        return _CONFIG["ethereum_mainnet"]
+        return w3.toChecksumAddress(_CONFIG["ethereum_mainnet"])
     else:
-        return _CONFIG["ethereum_ropsten"]
+        return w3.toChecksumAddress(_CONFIG["ethereum_ropsten"])
