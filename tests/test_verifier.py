@@ -90,11 +90,11 @@ class TestVerify(unittest.TestCase):
         self.assertEquals(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
     def test_verify_cert_file_sc(self):
-        result = verifier.verify_certificate_file('data/sc/valid.json')
+        result = verifier.verify_certificate_file('data/sc/ens_does_not_match_sc_address.json')
         self.assertEqual(StepStatus.passed.name, result[0]['status'])
         self.assertEqual(StepStatus.passed.name, result[1]['status'])
         self.assertEqual(StepStatus.passed.name, result[2]['status'])
-        self.assertEqual(StepStatus.passed.name, result[3]['status'])
+        self.assertEqual(StepStatus.failed.name, result[3]['status'])
 
     def test_verify_cert_file_sc_tampered(self):
         result = verifier.verify_certificate_file('data/sc/invalid_tampered_sc.json')
