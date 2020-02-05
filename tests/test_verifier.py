@@ -108,6 +108,10 @@ class TestVerify(unittest.TestCase):
         self.assertEqual(StepStatus.failed.name, result[HASH_RESULT_INDEX]['status'])
         self.assertEqual(StepStatus.failed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
+    def test_verify_cert_file_sc_valid(self):
+        result = verifier.verify_certificate_file('data/sc/valid.json')
+        self.assertEqual(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
+
 
 if __name__ == '__main__':
     unittest.main()
