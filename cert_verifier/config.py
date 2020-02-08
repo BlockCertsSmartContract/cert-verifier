@@ -9,10 +9,10 @@ _CONFIG = None
 def add_arguments(p):
     p.add('-c', '--my-config', required=False, env_var='CONFIG_FILE',
           is_config_file=True, help='config file path')
-    p.add_argument('--infura_ropsten', help='infura ropsten', env_var='INFURA_ROPSTEN')
-    p.add_argument('--infura_mainnet', help='infura mainnet', env_var='INFURA_MAINNET')
-    p.add_argument('--ethereum_mainnet', help='registry mainnet', env_var='REGISTRY_ROPSTEN')
-    p.add_argument('--ethereum_ropsten', help='registry ropsten', env_var='REGISTRY_MAINNET')
+    p.add_argument('--node_ropsten', help='infura ropsten', env_var='INFURA_ROPSTEN')
+    p.add_argument('--node_mainnet', help='infura mainnet', env_var='INFURA_MAINNET')
+    p.add_argument('--ens_resolver_mainnet', help='registry mainnet', env_var='REGISTRY_ROPSTEN')
+    p.add_argument('--ens_resolver_ropsten', help='registry ropsten', env_var='REGISTRY_MAINNET')
     p.add_argument('--chain', help='chain', env_var='CHAIN')
 
 
@@ -41,9 +41,9 @@ def get_infura():
     init_config()
     global _CONFIG
     if get_chain() == "mainnet":
-        return _CONFIG["infura_mainnet"]
+        return _CONFIG["node_mainnet"]
     else:
-        return _CONFIG["infura_ropsten"]
+        return _CONFIG["node_ropsten"]
 
 
 def get_registry():
@@ -51,6 +51,6 @@ def get_registry():
     global _CONFIG
     w3 = Web3(HTTPProvider())
     if get_chain() == "mainnet":
-        return w3.toChecksumAddress(_CONFIG["ethereum_mainnet"])
+        return w3.toChecksumAddress(_CONFIG["ens_resolver_mainnet"])
     else:
-        return w3.toChecksumAddress(_CONFIG["ethereum_ropsten"])
+        return w3.toChecksumAddress(_CONFIG["ens_resolver_ropsten"])
