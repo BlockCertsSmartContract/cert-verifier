@@ -254,9 +254,9 @@ class MakeW3(object):
     '''Defines a node url to be used for communication with ethereum blockchain and instantiates the
         web3 connection with ethereum node '''
 
-    def __init__(self):
+    def __init__(self, chain):
         '''Defines an ethereum node, that will be used for communication with blockchain'''
-        self.url = config.get_infura()
+        self.url = config.get_infura(chain)
         self.w3 = self.create_w3_obj()
 
     def create_w3_obj(self):
@@ -272,7 +272,7 @@ class ContractConnection(object):
 
     def __init__(self, certificate_model):
         self.cert_model = certificate_model
-        self.w3 = MakeW3().get_w3_obj()
+        self.w3 = MakeW3(self.cert_model.certificate_json["signature"]["anchors"][0]["chain"]).get_w3_obj()
         self.contract_info = self.get_contract_info()
         self.contract_obj = self.create_contract_object()
         self.functions = ContractFunctions(self.w3, self.contract_obj)

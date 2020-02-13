@@ -14,8 +14,6 @@ Set the ethereum node and ens resolver you want to use in the verification proce
 
 The Provided ones can also be used and should work out of the box, but keep in mind that they are only recommendations.
 
-Also choose the chain you want to use in your verification process <ropsten|mainnet> 
-
 ## Verify a certificate by command line
 
 1. Ensure you have an python environment. [Recommendations](https://github.com/blockchain-certificates/cert-issuer/blob/master/docs/virtualenv.md)

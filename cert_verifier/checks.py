@@ -39,7 +39,6 @@ def verify_hash(hash_val, certificate_model, is_batch_hash=False):
     except (KeyError, JSONDecodeError):
         print("Could not load smart contract")
     cert_status = sc.functions.call("hashes", hash_val)
-    cur_chain = config.get_chain()
     if cert_status == 0:
         if not is_batch_hash:
             result = True
@@ -47,15 +46,15 @@ def verify_hash(hash_val, certificate_model, is_batch_hash=False):
             result = False
         return {"validity": result,
                 "name": "ethcheck",
-                "status": " hash is not issued on " + cur_chain}
+                "status": " hash is not issued"}
     elif cert_status == 1:
         return {"validity": True,
                 "name": "ethcheck",
-                "status": " hash is valid on " + cur_chain}
+                "status": " hash is valid on"}
     elif cert_status == 2:
         return {"validity": False,
                 "name": "ethcheck",
-                "status": " hash is revoked on " + cur_chain}
+                "status": " hash is revoked on"}
 
 
 class VerificationCheck(object):
@@ -271,10 +270,11 @@ class EnsChecker(VerificationCheck):
     def __init__(self, cert_model):
         self.ens_name = cert_model.certificate_json["signature"]["anchors"][0]["ens_name"]
         self.contract_address = cert_model.certificate_json["signature"]["anchors"][0]["sourceId"]
+        self.chain = cert_model.certificate_json["signature"]["anchors"][0]["chain"]
 
     def do_execute(self):
-        registry = config.get_registry()
-        w3_factory = MakeW3()
+        registry = config.get_registry(self.chain)
+        w3_factory = MakeW3(self.chain)
         w3 = w3_factory.get_w3_obj()
         ns = ENS.fromWeb3(w3, registry)
         address = ns.address(self.ens_name)

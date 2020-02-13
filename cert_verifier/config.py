@@ -13,7 +13,6 @@ def add_arguments(p):
     p.add_argument('--node_mainnet', help='infura mainnet', env_var='INFURA_MAINNET')
     p.add_argument('--ens_resolver_mainnet', help='registry mainnet', env_var='REGISTRY_ROPSTEN')
     p.add_argument('--ens_resolver_ropsten', help='registry ropsten', env_var='REGISTRY_MAINNET')
-    p.add_argument('--chain', help='chain', env_var='CHAIN')
 
 
 def read_config():
@@ -31,26 +30,20 @@ def init_config():
         return _CONFIG
 
 
-def get_chain():
+def get_infura(chain):
     init_config()
     global _CONFIG
-    return _CONFIG["chain"]
-
-
-def get_infura():
-    init_config()
-    global _CONFIG
-    if get_chain() == "mainnet":
+    if chain == "ethereumMainnet":
         return _CONFIG["node_mainnet"]
     else:
         return _CONFIG["node_ropsten"]
 
 
-def get_registry():
+def get_registry(chain):
     init_config()
     global _CONFIG
     w3 = Web3(HTTPProvider())
-    if get_chain() == "mainnet":
+    if chain == "ethereumMainnet":
         return w3.toChecksumAddress(_CONFIG["ens_resolver_mainnet"])
     else:
         return w3.toChecksumAddress(_CONFIG["ens_resolver_ropsten"])
