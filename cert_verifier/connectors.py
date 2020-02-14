@@ -196,60 +196,6 @@ class EtherscanConnector(TransactionLookupConnector):
         return TransactionData(signing_key, script, date_time_utc=int(date_time), revoked_addresses=None)
 
 
-def get_field_or_default(data, field_name):
-    if field_name in data:
-        return data[field_name]
-    else:
-        return None
-
-
-def get_issuer_info(certificate_model):
-    issuer_json = get_remote_json(certificate_model.issuer.id)
-    if not issuer_json:
-        raise Exception('Issuer URL returned no results ' + certificate_model.issuer.id)
-
-    # we use the revocation list in the certificate
-    revoked_assertions = []
-    v2ish = certificate_model.version == BlockcertVersion.V2 or certificate_model.version == BlockcertVersion.V2_ALPHA
-    if v2ish:
-        if 'revocationList' in certificate_model.certificate_json['badge']['issuer']:
-            revocation_url = certificate_model.certificate_json['badge']['issuer']['revocationList']
-            revoked_json = get_remote_json(revocation_url)
-            if revoked_json and revoked_json['revokedAssertions']:
-                revoked_assertions = [r['id'] for r in revoked_json['revokedAssertions']]
-
-    issuer_keys = []
-
-    if '@context' in issuer_json:
-        if 'publicKey' in issuer_json:
-            for public_key in issuer_json['publicKey']:
-                pk = public_key['id'][len(PUBKEY_PREFIX):]
-                created = get_field_or_default(public_key, 'created')
-                expires = get_field_or_default(public_key, 'expires')
-                revoked = get_field_or_default(public_key, 'revoked')
-                issuer_keys.append(IssuerKey(pk, created, expires, revoked))
-        # Backcompat for v2 alpha issuer
-        elif 'publicKeys' in issuer_json:
-            for public_key in issuer_json['publicKeys']:
-                pk = public_key['publicKey'][len(PUBKEY_PREFIX):]
-
-                created = get_field_or_default(public_key, 'created')
-                expires = get_field_or_default(public_key, 'expires')
-                revoked = get_field_or_default(public_key, 'revoked')
-                issuer_keys.append(IssuerKey(pk, created, expires, revoked))
-        return IssuerInfo(issuer_keys, revoked_assertions=revoked_assertions)
-    else:
-        # V1 issuer format
-        issuer_key = IssuerKey(issuer_json['issuerKeys'][0]['key'])
-        if revoked_assertions:
-            # this is a v2 certificate with legacy issuer format
-            return IssuerInfo([issuer_key], revoked_assertions=revoked_assertions)
-        else:
-            revocation_key = IssuerKey(issuer_json['revocationKeys'][0]['key'])
-            issuer_info = IssuerInfo([issuer_key], revocation_keys=[revocation_key])
-            return issuer_info
-
-
 class MakeW3(object):
     '''Defines a node url to be used for communication with ethereum blockchain and instantiates the
         web3 connection with ethereum node '''
@@ -304,3 +250,58 @@ class ContractFunctions(object):
 
     def call(self, method, *argv):
         return self.contract_obj.functions[method](*argv).call()
+
+
+def get_field_or_default(data, field_name):
+    if field_name in data:
+        return data[field_name]
+    else:
+        return None
+
+
+def get_issuer_info(certificate_model):
+    issuer_json = get_remote_json(certificate_model.issuer.id)
+    if not issuer_json:
+        raise Exception('Issuer URL returned no results ' + certificate_model.issuer.id)
+
+    # we use the revocation list in the certificate
+    revoked_assertions = []
+    v2ish = certificate_model.version == BlockcertVersion.V2 or certificate_model.version == BlockcertVersion.V2_ALPHA
+    if v2ish:
+        if 'revocationList' in certificate_model.certificate_json['badge']['issuer']:
+            revocation_url = certificate_model.certificate_json['badge']['issuer']['revocationList']
+            revoked_json = get_remote_json(revocation_url)
+            if revoked_json and revoked_json['revokedAssertions']:
+                revoked_assertions = [r['id'] for r in revoked_json['revokedAssertions']]
+
+    issuer_keys = []
+
+    if '@context' in issuer_json:
+        if 'publicKey' in issuer_json:
+            for public_key in issuer_json['publicKey']:
+                pk = public_key['id'][len(PUBKEY_PREFIX):]
+                created = get_field_or_default(public_key, 'created')
+                expires = get_field_or_default(public_key, 'expires')
+                revoked = get_field_or_default(public_key, 'revoked')
+                issuer_keys.append(IssuerKey(pk, created, expires, revoked))
+        # Backcompat for v2 alpha issuer
+        elif 'publicKeys' in issuer_json:
+            for public_key in issuer_json['publicKeys']:
+                pk = public_key['publicKey'][len(PUBKEY_PREFIX):]
+
+                created = get_field_or_default(public_key, 'created')
+                expires = get_field_or_default(public_key, 'expires')
+                revoked = get_field_or_default(public_key, 'revoked')
+                issuer_keys.append(IssuerKey(pk, created, expires, revoked))
+        return IssuerInfo(issuer_keys, revoked_assertions=revoked_assertions)
+    else:
+        # V1 issuer format
+        issuer_key = IssuerKey(issuer_json['issuerKeys'][0]['key'])
+        if revoked_assertions:
+            # this is a v2 certificate with legacy issuer format
+            return IssuerInfo([issuer_key], revoked_assertions=revoked_assertions)
+        else:
+            revocation_key = IssuerKey(issuer_json['revocationKeys'][0]['key'])
+            issuer_info = IssuerInfo([issuer_key], revocation_keys=[revocation_key])
+            return issuer_info
+

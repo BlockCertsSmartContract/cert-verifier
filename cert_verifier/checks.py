@@ -14,10 +14,10 @@ from cert_core.cert_model.model import SignatureType
 from cert_schema import BlockcertValidationError
 from cert_schema import normalize_jsonld
 from chainpoint3 import Chainpoint
-from cert_verifier import config
 from ens import ENS
 
 from cert_verifier import StepStatus
+from cert_verifier import config
 from cert_verifier.connectors import ContractConnection, MakeW3
 from cert_verifier.errors import InvalidCertificateError
 
@@ -129,25 +129,6 @@ class BinaryFileIntegrityChecker(VerificationCheck):
 
 class NormalizedJsonLdIntegrityChecker(VerificationCheck):
     def __init__(self, content_to_verify, expected_hash, detect_unmapped_fields=False):
-        self.content_to_verify = content_to_verify
-        self.expected_hash = expected_hash
-        self.detect_unmapped_fields = detect_unmapped_fields
-
-    def do_execute(self):
-        try:
-            normalized = normalize_jsonld(self.content_to_verify,
-                                          detect_unmapped_fields=self.detect_unmapped_fields)
-            local_hash = hash_normalized(normalized)
-            cert_hashes_match = hashes_match(local_hash, self.expected_hash)
-            return cert_hashes_match
-        except BlockcertValidationError:
-            logging.error('Certificate has been modified', exc_info=True)
-            return False
-
-
-class NormalizedJsonLdIntegrityCheckerSC(VerificationCheck):
-    def __init__(self, certificate_model, content_to_verify, expected_hash, detect_unmapped_fields=False):
-        self.certificate_model = certificate_model
         self.content_to_verify = content_to_verify
         self.expected_hash = expected_hash
         self.detect_unmapped_fields = detect_unmapped_fields
@@ -321,10 +302,9 @@ def create_anchored_data_verification_group(certificate_model, chain, transactio
     for s in signatures:
         if is_issued_on_smartcontract:
             steps = [ReceiptIntegrityChecker(s.merkle_proof.proof_json),
-                     NormalizedJsonLdIntegrityCheckerSC(certificate_model,
-                                                        s.content_to_verify,
-                                                        s.merkle_proof.target_hash,
-                                                        detect_unmapped_fields=detect_unmapped_fields)]
+                     NormalizedJsonLdIntegrityChecker(s.content_to_verify,
+                                                      s.merkle_proof.target_hash,
+                                                      detect_unmapped_fields=detect_unmapped_fields)]
             anchored_data_verification = VerificationGroup(
                 steps=steps,
                 name='Checking certificate has not been tampered with')
@@ -361,11 +341,11 @@ def create_revocation_verification_group(certificate_model, issuer_info, transac
     return VerificationGroup(steps=[revocation_check], name='Checking not revoked by issuer')
 
 
-def create_verification_steps(certificate_model, transaction_info=None, issuer_info=None, chain=None, is_issued_on_smartcontract=False):
+def create_verification_steps(certificate_model, transaction_info=None, issuer_info=None, chain=None,
+                              is_issued_on_smartcontract=False):
     steps = []
     v2ish = certificate_model.version == BlockcertVersion.V2 or certificate_model.version == BlockcertVersion.V2_ALPHA
     if is_issued_on_smartcontract:
-        steps = []
         # transaction-anchored data. All versions must have this. In V2 we add an extra check for unmapped fields
         detect_unmapped_fields = v2ish
         transaction_signature_group = create_anchored_data_verification_group(certificate_model,
