@@ -345,23 +345,33 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
                               is_issued_on_smartcontract=False):
     steps = []
     v2ish = certificate_model.version == BlockcertVersion.V2 or certificate_model.version == BlockcertVersion.V2_ALPHA
+
+    # embedded signature: V1.1. and V1.2 must have this
+    if not v2ish and not is_issued_on_smartcontract:
+        embedded_signature_group = create_embedded_signature_verification_group(certificate_model.signatures,
+                                                                                transaction_info, chain)
+        if not embedded_signature_group:
+            raise InvalidCertificateError('Did not find signature verification info in certificate')
+        steps.append(embedded_signature_group)
+
+    # transaction-anchored data. All versions must have this. In V2 we add an extra check for unmapped fields
+    detect_unmapped_fields = v2ish
+    transaction_signature_group = create_anchored_data_verification_group(certificate_model=certificate_model,
+                                                                          chain=chain,
+                                                                          transaction_info=transaction_info,
+                                                                          detect_unmapped_fields=detect_unmapped_fields,
+                                                                          is_issued_on_smartcontract=is_issued_on_smartcontract)
+
+    if not transaction_signature_group:
+        raise InvalidCertificateError('Did not find transaction verification info in certificate')
+    steps.append(transaction_signature_group)
+
+    # expiration check. All versions have this as an option.
+    expired_group = ExpiredChecker(certificate_model.expires)
+    steps.append(VerificationGroup(steps=[expired_group],
+                                   name='Checking certificate has not expired'))
+
     if is_issued_on_smartcontract:
-        # transaction-anchored data. All versions must have this. In V2 we add an extra check for unmapped fields
-        detect_unmapped_fields = v2ish
-        transaction_signature_group = create_anchored_data_verification_group(certificate_model,
-                                                                              chain,
-                                                                              transaction_info=transaction_info,
-                                                                              detect_unmapped_fields=detect_unmapped_fields,
-                                                                              is_issued_on_smartcontract=is_issued_on_smartcontract)
-        if not transaction_signature_group:
-            raise InvalidCertificateError('Did not find transaction verification info in certificate')
-        steps.append(transaction_signature_group)
-
-        # expiration check. All versions have this as an option.
-        expired_group = ExpiredChecker(certificate_model.expires)
-        steps.append(VerificationGroup(steps=[expired_group],
-                                       name='Checking certificate has not expired'))
-
         for s in certificate_model.signatures:
             # check if certificates hash is really issued and has not been revoked
             hash_group = HashValidityChecker(s.merkle_proof.merkle_root,
@@ -374,29 +384,6 @@ def create_verification_steps(certificate_model, transaction_info=None, issuer_i
         ens_group = EnsChecker(certificate_model)
         steps.append(VerificationGroup(steps=[ens_group], name='Checking if certificate is really issued by ens owner'))
     else:
-        # embedded signature: V1.1. and V1.2 must have this
-        if not v2ish:
-            embedded_signature_group = create_embedded_signature_verification_group(certificate_model.signatures,
-                                                                                    transaction_info, chain)
-            if not embedded_signature_group:
-                raise InvalidCertificateError('Did not find signature verification info in certificate')
-            steps.append(embedded_signature_group)
-
-        # transaction-anchored data. All versions must have this. In V2 we add an extra check for unmapped fields
-        detect_unmapped_fields = v2ish
-        transaction_signature_group = create_anchored_data_verification_group(certificate_model=certificate_model,
-                                                                              chain=chain,
-                                                                              transaction_info=transaction_info,
-                                                                              detect_unmapped_fields=detect_unmapped_fields)
-        if not transaction_signature_group:
-            raise InvalidCertificateError('Did not find transaction verification info in certificate')
-        steps.append(transaction_signature_group)
-
-        # expiration check. All versions have this as an option.
-        expired_group = ExpiredChecker(certificate_model.expires)
-        steps.append(VerificationGroup(steps=[expired_group],
-                                       name='Checking certificate has not expired'))
-
         # revocation check. All versions have this
         revocation_group = create_revocation_verification_group(certificate_model, issuer_info, transaction_info)
         steps.append(revocation_group)
