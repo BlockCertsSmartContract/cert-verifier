@@ -10,10 +10,11 @@ The most common way to use this is to add the [latest cert-verifier pypi package
 
 ## Configuration
 
-Set the ethereum node and ens resolver you want to use in the verification processes. 
+Set the ethereum node you want to use in the verification processes in ``` cert-verifier/cert_verifier/config.ini ```.
 
 The Provided ones can also be used and should work out of the box, but keep in mind that they are only recommendations.
 
+If you want to change the ens nodes as well you can use the ```conf_sample.ini``` schema as a structure guideline.
 ## Verify a certificate by command line
 
 1. Ensure you have an python environment. [Recommendations](https://github.com/blockchain-certificates/cert-issuer/blob/master/docs/virtualenv.md)

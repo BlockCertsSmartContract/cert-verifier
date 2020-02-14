@@ -11,8 +11,10 @@ def add_arguments(p):
           is_config_file=True, help='config file path')
     p.add_argument('--node_ropsten', help='infura ropsten', env_var='INFURA_ROPSTEN')
     p.add_argument('--node_mainnet', help='infura mainnet', env_var='INFURA_MAINNET')
-    p.add_argument('--ens_registry_mainnet', help='registry mainnet', env_var='REGISTRY_ROPSTEN')
-    p.add_argument('--ens_registry_ropsten', help='registry ropsten', env_var='REGISTRY_MAINNET')
+    p.add_argument('--ens_registry_mainnet', required=False, default="0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e",
+                   help='registry mainnet', env_var='REGISTRY_ROPSTEN')
+    p.add_argument('--ens_registry_ropsten', required=False, default="0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e",
+                   help='registry ropsten', env_var='REGISTRY_MAINNET')
 
 
 def read_config():
