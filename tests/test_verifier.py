@@ -110,6 +110,7 @@ class TestVerify(unittest.TestCase):
 
     def test_verify_cert_file_sc_valid(self):
         result = verifier.verify_certificate_file('data/sc/valid.json')
+        # note that this test is likely to fail in the ens verification, if the ens entries smartcontract is overwritten
         self.assertEqual(StepStatus.passed.name, result[VERIFICATION_RESULT_INDEX]['status'])
 
 
