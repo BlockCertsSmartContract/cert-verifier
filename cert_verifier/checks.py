@@ -254,7 +254,7 @@ class EnsChecker(VerificationCheck):
         self.chain = cert_model.certificate_json["signature"]["anchors"][0]["chain"]
 
     def do_execute(self):
-        registry = config.get_registry(self.chain)
+        registry = config.get_registry()
         w3_factory = MakeW3(self.chain)
         w3 = w3_factory.get_w3_obj()
         ns = ENS.fromWeb3(w3, registry)
