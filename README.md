@@ -18,13 +18,12 @@ If you want to change the ens nodes as well you can use the ```conf_sample.ini``
 ## Verify a certificate by command line
 
 1. Ensure you have an python environment. [Recommendations](https://github.com/blockchain-certificates/cert-issuer/blob/master/docs/virtualenv.md)
-
-3. Git clone the repository and change to the directory 
-``` bash git clone https://github.com/blockchain-certificates/cert-verifier.git && cd cert-verifier ```
-
-4. Run cert-viewer setup ```bash pip install . ```
-
-5. Run the main program
+1. Git clone the repository and change to the directory 
+    ``` 
+    bash git clone https://github.com/blockchain-certificates/cert-verifier.git && cd cert-verifier
+     ```
+1. Run cert-viewer setup ```bash pip install . ```
+1. Run the main program
   ```bash
   cd cert_verifier
   python verifier.py
