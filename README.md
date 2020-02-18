@@ -19,8 +19,6 @@ If you want to change the ens nodes as well you can use the ```conf_sample.ini``
 
 1. Ensure you have an python environment. [Recommendations](https://github.com/blockchain-certificates/cert-issuer/blob/master/docs/virtualenv.md)
 
-2. Ensure you have installed [solc](https://solidity.readthedocs.io/en/v0.5.3/installing-solidity.html)
-
 3. Git clone the repository and change to the directory 
 ``` bash git clone https://github.com/blockchain-certificates/cert-verifier.git && cd cert-verifier ```
 
