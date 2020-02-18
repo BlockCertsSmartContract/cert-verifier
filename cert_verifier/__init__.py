@@ -4,6 +4,7 @@ Verify blockchain certificates (http://www.blockcerts.org/)
 
 import binascii
 import datetime
+import os
 import sys
 from enum import Enum
 
@@ -11,9 +12,11 @@ import pytz
 from dateutil.parser import parse
 
 from cert_verifier.errors import *
-
+from cert_verifier import config
 unhexlify = binascii.unhexlify
 hexlify = binascii.hexlify
+config._cwd = os.path.dirname(os.path.abspath(__file__))
+
 if sys.version > '3':
     def unhexlify(h): return binascii.unhexlify(h.encode('utf8'))
 

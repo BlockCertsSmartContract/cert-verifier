@@ -2,7 +2,7 @@ import os
 import configargparse
 from web3 import Web3, HTTPProvider
 
-cwd = os.path.dirname(os.path.abspath(__file__))
+_cwd = "WILL BE SET IN INIT"
 _CONFIG = None
 
 
@@ -16,7 +16,7 @@ def add_arguments(p):
 
 
 def read_config():
-    p = configargparse.getArgumentParser(default_config_files=[os.path.join(cwd, 'config.ini')])
+    p = configargparse.getArgumentParser(default_config_files=[os.path.join(_cwd, 'config.ini')])
     add_arguments(p)
     parsed_config, _ = p.parse_known_args()
     return vars(parsed_config)
