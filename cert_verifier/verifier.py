@@ -15,11 +15,12 @@ Overview of verification steps for SmartContract variant
 - Check ens entry
 """
 import json
+import os
 import sys
 
 from cert_core import to_certificate_model
 
-from cert_verifier import connectors, printer
+from cert_verifier import connectors, printer, config
 from cert_verifier.checks import create_verification_steps
 
 
@@ -68,6 +69,7 @@ def verify_certificate_file(certificate_file_name, transaction_id=None, options=
 
 
 if __name__ == "__main__":
+    config._cwd = os.path.dirname(os.path.abspath(__file__))
     if len(sys.argv) > 1:
         for cert_file in sys.argv[1:]:
             verify_certificate_file(cert_file)
