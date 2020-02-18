@@ -66,7 +66,8 @@
     "proof": [],
     "anchors": [
       {
-        "sourceId": "0x3364A9f8b0dEDD60e6B9A79b8F63c334622a5742",
+        "sourceId": "0xfdeb1f36d7970aedafcedd933d8bcb392e53e78d553196fb00f9aec60664b1c8",
+        "contract_address": "0x3364A9f8b0dEDD60e6B9A79b8F63c334622a5742",
         "type": "ETHSmartContract",
         "chain": "ethereumRopsten",
         "ens_name": "tub.blockcerts.eth",
