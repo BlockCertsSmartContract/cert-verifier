@@ -250,7 +250,7 @@ class AuthenticityChecker(VerificationCheck):
 class EnsChecker(VerificationCheck):
     def __init__(self, cert_model):
         self.ens_name = cert_model.certificate_json["signature"]["anchors"][0]["ens_name"]
-        self.contract_address = cert_model.certificate_json["signature"]["anchors"][0]["sourceId"]
+        self.contract_address = cert_model.certificate_json["signature"]["anchors"][0]["contract_address"]
         self.chain = cert_model.certificate_json["signature"]["anchors"][0]["chain"]
 
     def do_execute(self):

@@ -240,7 +240,7 @@ class ContractConnection(object):
 
     def get_address(self):
         '''Returns transaction address'''
-        return self.contract_info["sourceId"]
+        return self.contract_info["contract_address"]
 
 
 class ContractFunctions(object):
