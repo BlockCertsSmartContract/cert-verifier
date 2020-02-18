@@ -16,6 +16,7 @@ from web3 import Web3, HTTPProvider
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
+
 def createTransactionLookupConnector(chain=Chain.bitcoin_mainnet, options=None):
     """
     :param chain: which chain, supported values are testnet and mainnet
