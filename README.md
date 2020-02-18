@@ -19,9 +19,9 @@ If you want to change the ens nodes as well you can use the ```conf_sample.ini``
 
 1. Ensure you have an python environment. [Recommendations](https://github.com/blockchain-certificates/cert-issuer/blob/master/docs/virtualenv.md)
 1. Git clone the repository and change to the directory 
-    ``` 
-    bash git clone https://github.com/blockchain-certificates/cert-verifier.git && cd cert-verifier
-     ```
+   ``` 
+   bash git clone https://github.com/blockchain-certificates/cert-verifier.git && cd cert-verifier
+   ```
 1. Run cert-viewer setup ```bash pip install . ```
 1. Run the main program
   ```bash
