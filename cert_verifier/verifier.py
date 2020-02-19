@@ -56,6 +56,7 @@ def verify_certificate(certificate_model, options=None):
 
 
 def verify_certificate_file(certificate_file_name, transaction_id=None, options={}):
+    config.init_cwd(os.path.dirname(os.path.abspath(__file__)))
     printer.print_certfile_information(certificate_file_name)
     with open(certificate_file_name, 'rb') as cert_fp:
         certificate_bytes = cert_fp.read()
@@ -69,7 +70,6 @@ def verify_certificate_file(certificate_file_name, transaction_id=None, options=
 
 
 if __name__ == "__main__":
-    config._cwd = os.path.dirname(os.path.abspath(__file__))
     if len(sys.argv) > 1:
         for cert_file in sys.argv[1:]:
             verify_certificate_file(cert_file)

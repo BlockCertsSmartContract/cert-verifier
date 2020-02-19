@@ -2,7 +2,7 @@ import os
 import configargparse
 from web3 import Web3, HTTPProvider
 
-_cwd = "WILL BE SET IN INIT"
+_CWD = None
 _CONFIG = None
 
 
@@ -16,7 +16,7 @@ def add_arguments(p):
 
 
 def read_config():
-    p = configargparse.getArgumentParser(default_config_files=[os.path.join(_cwd, 'config.ini')])
+    p = configargparse.getArgumentParser(default_config_files=[os.path.join(_CWD, 'config.ini')])
     add_arguments(p)
     parsed_config, _ = p.parse_known_args()
     return vars(parsed_config)
@@ -28,6 +28,14 @@ def init_config():
         _CONFIG = read_config()
     else:
         return _CONFIG
+
+
+def init_cwd(cwd):
+    global _CWD
+    if _CWD is None:
+        _CWD = cwd
+    else:
+        return _CWD
 
 
 def get_infura(chain):
