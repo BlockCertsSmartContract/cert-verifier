@@ -2,23 +2,26 @@ def print_issuer_information(cert_json):
     print("Issuer information from cert")
     #1.1
     try:
-        print("Issuer        | {}".format(cert_json['certificate']['issuer']['name']))
-        print("Issuer URL    | {}".format(cert_json['certificate']['issuer']['url']))
-        print("Issuer E-Mail | {}".format(cert_json['certificate']['issuer']['email']))
+        issuer = cert_json['certificate']['issuer']
+        print("Issuer        | {}".format(issuer['name']))
+        print("Issuer URL    | {}".format(issuer['url']))
+        print("Issuer E-Mail | {}".format(issuer['email']))
     except:
         pass
     # 1.2
     try:
-        print("Issuer        | {}".format(cert_json['document']['certificate']['issuer']['name']))
-        print("Issuer URL    | {}".format(cert_json['document']['certificate']['issuer']['url']))
-        print("Issuer E-Mail | {}".format(cert_json['document']['certificate']['issuer']['email']))
+        issuer = cert_json['document']['certificate']['issuer']
+        print("Issuer        | {}".format(issuer['name']))
+        print("Issuer URL    | {}".format(issuer['url']))
+        print("Issuer E-Mail | {}".format(issuer['email']))
     except:
         pass
     # 2.0
     try:
-        print("Issuer        | {}".format(cert_json['badge']['issuer']['name']))
-        print("Issuer URL    | {}".format(cert_json['badge']['issuer']['url']))
-        print("Issuer E-Mail | {}".format(cert_json['badge']['issuer']['email']))
+        issuer = cert_json['badge']['issuer']
+        print("Issuer        | {}".format(issuer['name']))
+        print("Issuer URL    | {}".format(issuer['url']))
+        print("Issuer E-Mail | {}".format(issuer['email']))
     except:
         pass
     # ENS
